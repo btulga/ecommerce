@@ -1,7 +1,8 @@
 const db = require('../models');
 const CartService = require('./cart.service');
 // In a real application, you would have a service for each payment provider
-// const StripeService = require('./stripe.service'); 
+const QpayService = require('./payment_providers/qpay.service');
+// const StripeService = require('../provider/payment/stripe.service');
 
 const PaymentService = {
 
@@ -108,7 +109,36 @@ const PaymentService = {
       console.error("Error capturing payment:", error);
       throw error;
     }
-  }
+  },
+
+  /**
+   * Initiates a payment with a specific provider for a given payment record.
+   * This would typically be called after a payment record is created for an order.
+   * @param {string} paymentId The ID of the payment record.
+   * @param {string} providerId The ID of the payment provider (e.g., 'qpay', 'stripe').
+   * @returns {Promise<object>} Data from the payment provider needed to complete the payment (e.g., redirect URL, QR code data).
+   */
+  initiateProviderPayment: async (paymentId, providerId) => {
+    const payment = await db.Payment.findByPk(paymentId);
+
+    if (!payment) {
+      throw new Error('Payment record not found.');
+    }
+
+    // Call the appropriate payment provider service based on providerId
+    switch (providerId) {
+      case 'qpay':
+        // Assuming QpayService.createInvoice returns necessary data like invoice_id and payment URL/QR
+        const qpayInvoiceData = await QpayService.createInvoice(payment.order_id, payment.amount, payment.currency_code);
+        // You might want to store the QPay invoice ID in the payment record's data field
+        payment.data = { ...payment.data, qpay_invoice_id: qpayInvoiceData.invoice_id };
+        await payment.save();
+        return qpayInvoiceData; // Return data needed for frontend redirect or QR code
+      // Add cases for other providers here (e.g., 'stripe')
+      default:
+        throw new Error(`Payment provider "${providerId}" is not supported.`);
+    }
+  },
 };
 
 module.exports = PaymentService;
