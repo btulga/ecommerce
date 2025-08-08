@@ -9,7 +9,7 @@ module.exports = (sequelize) => {
       DiscountRule.belongsToMany(models.Customer, {
         through: 'discount_rule_customers',
         foreignKey: 'discount_rule_id',
-        as: 'valid_customers'
+        as: 'customers'
       });
 
       // We should also add other existing associations here if they exist

@@ -26,10 +26,10 @@ const CouponService = {
           await discountRule.setProducts(data.restrictions.products, { transaction: t });
         }
         if (data.restrictions.sales_channels) {
-          await discountRule.setSales_channels(data.restrictions.sales_channels, { transaction: t });
+          await discountRule.setSalesChannels(data.restrictions.sales_channels, { transaction: t });
         }
-        if (data.restrictions.valid_customers) {
-          await discountRule.setValid_customers(data.restrictions.valid_customers, { transaction: t });
+        if (data.restrictions.customers) {
+          await discountRule.setCustomers(data.restrictions.customers, { transaction: t });
         }
       }
 
@@ -52,7 +52,7 @@ const CouponService = {
           include: [{
               model: db.DiscountRule,
               as: 'rule',
-              include: ['products', 'sales_channels', 'valid_customers']
+              include: ['products', 'sales_channels', 'customers'],
           }]
       });
   },
@@ -69,7 +69,7 @@ const CouponService = {
       include: [{
         model: db.DiscountRule,
         as: 'rule',
-        include: ['sales_channels', 'products', 'valid_customers']
+        include: ['sales_channels', 'products', 'customers']
       }]
     });
 
@@ -85,11 +85,11 @@ const CouponService = {
     const discountRule = coupon.rule;
 
     // Customer-specific validation
-    if (discountRule.valid_customers && discountRule.valid_customers.length > 0) {
+    if (discountRule.customers && discountRule.customers.length > 0) {
       if (!cart.customer_id) {
         throw { message: "You must be logged in to use this coupon.", code: 'authentication_required' };
       }
-      if (!discountRule.valid_customers.some(c => c.id === cart.customer_id)) {
+      if (!discountRule.customers.some(c => c.id === cart.customer_id)) {
         throw { message: "This coupon is not valid for your account.", code: 'coupon_not_applicable_to_user' };
       }
     }
