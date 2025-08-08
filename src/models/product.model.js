@@ -29,6 +29,12 @@ module.exports = (sequelize, DataTypes) => {
         through: 'discount_rule_products',
         foreignKey: 'product_id'
       });
+
+      // Product belongs to one ProductCategory
+      Product.belongsTo(models.ProductCategory, {
+        foreignKey: 'category_id',
+        as: 'category'
+      });
     }
   }
   Product.init({
@@ -51,7 +57,14 @@ module.exports = (sequelize, DataTypes) => {
     status: {
         type: DataTypes.ENUM('draft', 'published', 'archived'),
         defaultValue: 'draft'
-    },
+    },    
+    category_id: {
+      type: DataTypes.UUID,
+      references: {
+        model: 'product_categories', // Assuming the table name is 'product_categories'
+        key: 'id',
+      },
+    }, // Added foreign key for product category
     type: DataTypes.STRING // Added field for product type
   }, {
     sequelize,

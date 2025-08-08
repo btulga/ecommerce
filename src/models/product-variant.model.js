@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
+      this.belongsTo(models.Product, {
+        foreignKey: 'product_id',
+        as: 'product'
+      });
       // define association here
     }
   }
@@ -25,7 +29,15 @@ module.exports = (sequelize, DataTypes) => {
     hs_code: DataTypes.STRING,
     origin_country: DataTypes.STRING,
     mid_code: DataTypes.STRING,
-    material: DataTypes.STRING
+    material: DataTypes.STRING,
+    product_id: {
+      type: DataTypes.UUID,
+      references: {
+        model: 'product', // This should be the table name
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+    },
   }, {
     sequelize,
     modelName: 'ProductVariant',
