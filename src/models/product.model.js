@@ -51,7 +51,8 @@ module.exports = (sequelize, DataTypes) => {
     status: {
         type: DataTypes.ENUM('draft', 'published', 'archived'),
         defaultValue: 'draft'
-    }
+    },
+    type: DataTypes.STRING // Added field for product type
   }, {
     sequelize,
     modelName: 'Product',

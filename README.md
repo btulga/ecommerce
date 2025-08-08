@@ -10,6 +10,14 @@ This project is a headless REST API for an e-commerce platform, built using Expr
 *   Modular code structure
 *   UUID primary keys for models
 
+## Supported Product Types
+
+This platform supports various product types to cater to different needs:
+
+*   **Physical:** Traditional goods that require shipping (e.g., 5G Router).
+*   **Digital:** Products that are delivered electronically (e.g., Phone Number).
+*   **Service:** Products representing a service, such as mobile phone top-up cards. For these products, a shipping address is not required, and fulfillment involves direct integration with the telecommunications provider (telco) to apply the top-up to the customer's specified phone number.
+
 ## Setup
 
 To set up and run the project locally, follow these steps:

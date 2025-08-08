@@ -52,14 +52,21 @@ const CartService = {
     }
   },
 
-  addOrUpdateItem: async (cartId, variantId, quantity) => {
+  addOrUpdateItem: async (cartId, variantId, quantity, targetPhoneNumber = null) => {
     try {
       const cart = await CartService.getCart(cartId);
-      const variant = await db.ProductVariant.findByPk(variantId);
+      const variant = await db.ProductVariant.findByPk(variantId, {
+        include: [{
+          model: db.Product,
+          as: 'product'
+        }]
+      });
 
       if (!variant) {
         throw new Error("Product variant not found.");
       }
+
+      const isServiceProduct = variant.product && variant.product.type === 'service';
 
       let cartItem = await db.CartItem.findOne({
         where: {
@@ -69,12 +76,20 @@ const CartService = {
       });
 
       if (cartItem) {
+        // If it's a service product and a phone number is provided, update it
+        if (isServiceProduct && targetPhoneNumber) {
+            cartItem.target_phone_number = targetPhoneNumber;
+        } else if (isServiceProduct && !targetPhoneNumber) {
+             // Optionally handle the case where a service product is added without a phone number
+             // throw new Error("Phone number is required for this product.");
+        }
         cartItem.quantity += quantity;
         await cartItem.save();
       } else {
         cartItem = await db.CartItem.create({
           cart_id: cartId,
           variant_id: variantId,
+          target_phone_number: isServiceProduct ? targetPhoneNumber : null, // Save phone number for service products
           quantity: quantity,
           unit_price: variant.price,
         });
@@ -146,7 +161,13 @@ const CartService = {
           throw new Error("Cannot complete an empty cart.");
       }
       // TODO: Add more validations here (e.g., shipping address, payment method, inventory check)
+      
+      // Check if the cart contains any physical products
+      const hasPhysicalProducts = cart.items.some(item =>
+        item.variant && item.variant.product && item.variant.product.type === 'physical'
+      );
 
+      // TODO: If hasPhysicalProducts, ensure shipping address is provided in the cart
       // 1. Create the Order
       const order = await db.Order.create({
         customer_id: cart.customer_id,
@@ -157,6 +178,8 @@ const CartService = {
         status: 'pending', // Initial status
         payment_status: 'awaiting',
         fulfillment_status: 'not_fulfilled',
+        // Conditionally include shipping addresses if physical products exist
+        shipping_address_id: hasPhysicalProducts ? cart.shipping_address_id : null,
       }, { transaction: t });
 
       // 2. Create OrderItems from CartItems
@@ -166,6 +189,7 @@ const CartService = {
           variant_id: cartItem.variant_id,
           quantity: cartItem.quantity,
           unit_price: cartItem.unit_price,
+          target_phone_number: cartItem.target_phone_number, // Copy phone number to order item
           // You might add product name, thumbnail etc. from variant/product here
         }, { transaction: t });
       }));

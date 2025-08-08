@@ -34,7 +34,10 @@ The agent must handle all aspects of data modeling and migration in a holistic m
 - **Database Relationships (Associations):**
     - Define and implement one-to-one, one-to-many, and many-to-many relationships between models.
     - Create and manage join tables (e.g., `discount_rule_products`) for many-to-many associations.
-    - Centrally configure all model associations within `src/models/index.js`.
+    - Centrally configure all model associations within `src/models/index.js` and model files themselves.
+- **Handling Diverse Product Types:**
+    - Understand and model different product types: physical (requires shipping), digital (delivered electronically), and service (like top-ups, requiring specific handling).
+    - Modify models (`Product`, `CartItem`, `OrderItem`) to store type-specific data (e.g., `target_phone_number` for top-ups).
 
 ## III. Business Logic & Service Layer
 
@@ -43,11 +46,20 @@ The agent must be able to translate business requirements into functional code w
 - **Service File Generation:** Create service files to encapsulate business logic.
 - **Logic Implementation:**
     - Implement core e-commerce logic: cart creation, adding/updating/removing items.
+    - Handle adding/updating items with type-specific data (e.g., `target_phone_number` for top-ups).
     - Implement complex validation rules. For example, when applying a coupon:
         1.  Check if the coupon is valid for the current `SalesChannel`.
         2.  Check if the coupon applies to specific `Product`s within the cart.
         3.  Validate coupon status (e.g., not disabled, within usage limits).
 - **Security:** Automatically implement security best practices, such as hashing user passwords with `bcryptjs` before saving to the database.
+- **Order Processing with Mixed Types:**
+    - Implement logic in the order service to convert carts to orders, transferring type-specific data.
+    - Handle conditional requirements during checkout, such as making shipping address optional for orders without physical items.
+- **Fulfillment Management:**
+    - Understand and implement fulfillment logic based on product type.
+    - Implement integration with external services (e.g., a `TelcoService` for top-up fulfillment) or suggest how such integrations should be structured.
+    - Update order and order item fulfillment statuses.
+
 
 ## IV. API Layer (Routes & Controllers)
 
