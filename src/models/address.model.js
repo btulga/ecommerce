@@ -10,12 +10,6 @@ module.exports = (sequelize) => {
         as: 'customer'
       });
 
-      // An address can be a billing address for an Order
-      Address.hasMany(models.Order, {
-        foreignKey: 'billing_address_id',
-        as: 'billed_orders'
-      });
-
       // An address can be a shipping address for an Order
       Address.hasMany(models.Order, {
         foreignKey: 'shipping_address_id',

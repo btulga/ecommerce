@@ -1,6 +1,6 @@
 # E-commerce Headless REST API
 
-This project is a headless REST API for an e-commerce platform, built using Express, Sequelize, and PostgreSQL. It follows a headless approach similar to Medusa.js, providing a flexible backend for managing products, orders, users, and other e-commerce related data.
+Энэ төсөл нь Express, Sequelize, болон PostgreSQL-г ашиглан бүтээгдсэн ecommerce платформын headless REST API юм. Энэ нь Medusa.js-тэй төстэй headless аргачлалыг дагаж мөрддөг бөгөөд бүтээгдэхүүн, захиалга, хэрэглэгчид болон ecommerce-тэй холбоотой бусад өгөгдлийг удирдах уян хатан backend-ийг хангадаг.
 
 ## Features
 
@@ -12,15 +12,15 @@ This project is a headless REST API for an e-commerce platform, built using Expr
 
 ## Supported Product Types
 
-This platform supports various product types to cater to different needs:
+Энэхүү платформ нь өөр өөр хэрэгцээнд нийцүүлэн төрөл бүрийн бүтээгдэхүүний төрлийг дэмждэг:
 
-*   **Physical:** Traditional goods that require shipping (e.g., 5G Router).
-*   **Digital:** Products that are delivered electronically (e.g., Phone Number).
-*   **Service:** Products representing a service, such as mobile phone top-up cards. For these products, a shipping address is not required, and fulfillment involves direct integration with the telecommunications provider (telco) to apply the top-up to the customer's specified phone number.
+*   **Биет:** Хүргэлт шаарддаг уламжлалт бараа (жишээ нь, 5G Router).
+*   **Дижитал:** Цахим хэлбэрээр хүргэгддэг бүтээгдэхүүн (жишээ нь, Утасны дугаар).
+*   **Үйлчилгээ:** Үйлчилгээг илэрхийлэх бүтээгдэхүүн, тухайлбал гар утасны данс цэнэглэх картууд. Эдгээр бүтээгдэхүүний хувьд хүргэлтийн хаяг шаардлагагүй бөгөөд гүйцэтгэл нь харилцаа холбооны оператортой (telco) шууд интеграц хийж, хэрэглэгчийн заасан утасны дугаарт цэнэглэлтийг хийх үйл явцыг агуулдаг.
 
 ## Setup
 
-To set up and run the project locally, follow these steps:
+Төслийг локал орчинд суулгаж ажиллуулахын тулд дараах алхмуудыг дагана уу:
 
 1.  **Clone the repository:**
 

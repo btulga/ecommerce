@@ -5,13 +5,27 @@ const { Model } = require('sequelize');
 // between DiscountRule and Product.
 module.exports = (sequelize) => {
   class DiscountRuleProduct extends Model {}
-
-  DiscountRuleProduct.init({}, {
+  DiscountRuleProduct.init({
+    discount_rule_id: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      references: {
+        model: 'DiscountRule', // This is the model name, not the table name
+        key: 'id',
+      },
+    },
+    product_id: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      references: {
+        model: 'Product', // This is the model name, not the table name
+        key: 'id',
+      },
+    },
+  }, {
     sequelize,
     modelName: 'DiscountRuleProduct',
     tableName: 'discount_rule_products',
-    timestamps: false, // Join tables usually don't need timestamps
   });
-
   return DiscountRuleProduct;
 };

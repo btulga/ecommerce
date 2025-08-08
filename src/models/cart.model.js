@@ -19,7 +19,6 @@ module.exports = (sequelize, DataTypes) => {
   }
   Cart.init({
     email: DataTypes.STRING,
-    billing_address_id: DataTypes.STRING,
     shipping_address_id: DataTypes.STRING,
     customer_id: DataTypes.STRING,
     payment_id: DataTypes.STRING,

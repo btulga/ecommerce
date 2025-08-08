@@ -17,12 +17,6 @@ module.exports = (sequelize, DataTypes) => {
         as: 'items'
       });
       
-      // Order has one billing Address
-      Order.belongsTo(models.Address, {
-          foreignKey: 'billing_address_id',
-          as: 'billing_address'
-      });
-      
       // Order has one shipping Address
       Order.belongsTo(models.Address, {
           foreignKey: 'shipping_address_id',
@@ -67,7 +61,6 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         validate: { isEmail: true }
     },
-    billing_address_id: DataTypes.UUID,
     shipping_address_id: DataTypes.UUID,
     // region_id: DataTypes.STRING, // <-- REMOVED
     currency_code: {
