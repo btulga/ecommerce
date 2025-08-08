@@ -14,6 +14,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'product_id',
         as: 'product'
       });
+      this.belongsToMany(models.ProductOptionValue, {
+        through: models.ProductVariantOption,
+        foreignKey: 'product_variant_id',
+        as: 'options', // or values, depending on how you want to name the association
+      });
       // define association here
     }
   }

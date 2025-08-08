@@ -23,6 +23,13 @@ module.exports = (sequelize, DataTypes) => {
           foreignKey: 'customer_id',
           as: 'addresses'
       });
+
+      // Customer can belong to many CustomerGroups
+      Customer.belongsToMany(models.CustomerGroup, {
+        through: 'customer_group_customers',
+        foreignKey: 'customer_id',
+        as: 'customer_groups'
+      });
     }
   }
   Customer.init({
