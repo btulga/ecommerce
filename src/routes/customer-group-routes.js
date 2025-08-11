@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const customerGroupController = require('../controllers/customer-group.controller');
 const CustomerGroupService = require('../services/customer-group.service'); // Assuming the service file is in ../services
 
 // Get all customer groups
@@ -12,54 +13,18 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-// Get a single customer group by ID
-router.get('/:id', async (req, res, next) => {
-  try {
-    const customerGroup = await CustomerGroupService.findCustomerGroupById(req.params.id);
-    if (!customerGroup) {
-      return res.status(404).json({ message: 'Customer group not found' });
-    }
-    res.json(customerGroup);
-  } catch (error) {
-    next(error);
-  }
-});
-
+// Add a customer to a customer group
 // Create a new customer group
-router.post('/', async (req, res, next) => {
-  try {
-    const newCustomerGroup = await CustomerGroupService.createCustomerGroup(req.body);
-    res.status(201).json(newCustomerGroup);
-  } catch (error) {
-    next(error);
-  }
-});
+router.post('/', customerGroupController.createCustomerGroup);
+
+// Get a specific customer group by ID
+router.get('/:id', customerGroupController.getCustomerGroup);
 
 // Update a customer group by ID
-router.put('/:id', async (req, res, next) => {
-  try {
-    const updatedCustomerGroup = await CustomerGroupService.updateCustomerGroup(req.params.id, req.body);
-    if (!updatedCustomerGroup) {
-      return res.status(404).json({ message: 'Customer group not found' });
-    }
-    res.json(updatedCustomerGroup);
-  } catch (error) {
-    next(error);
-  }
-});
+router.put('/:id', customerGroupController.updateCustomerGroup);
 
 // Delete a customer group by ID
-router.delete('/:id', async (req, res, next) => {
-  try {
-    const deleted = await CustomerGroupService.deleteCustomerGroup(req.params.id);
-    if (!deleted) {
-      return res.status(404).json({ message: 'Customer group not found' });
-    }
-    res.status(204).end();
-  } catch (error) {
-    next(error);
-  }
-});
+router.delete('/:id', customerGroupController.deleteCustomerGroup);
 
 // Add a customer to a customer group
 router.post('/:id/customers', async (req, res, next) => {
@@ -91,5 +56,33 @@ router.delete('/:id/customers/:customerId', async (req, res, next) => {
   }
 });
 
+// Apply a discount rule to a customer group
+router.post('/:id/discount-rules', async (req, res, next) => {
+  try {
+    const customerGroupId = req.params.id;
+    const discountRuleId = req.body.discountRuleId; // Assuming the discount rule ID is sent in the request body
+
+    if (!discountRuleId) {
+      return res.status(400).json({ message: 'Discount Rule ID is required' });
+    }
+
+    await CustomerGroupService.applyDiscountRuleToGroup(customerGroupId, discountRuleId);
+    res.status(200).json({ message: 'Discount rule applied to group successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Remove a discount rule from a customer group
+router.delete('/:id/discount-rules/:discountRuleId', async (req, res, next) => {
+  try {
+    const customerGroupId = req.params.id;
+    const discountRuleId = req.params.discountRuleId;
+    await CustomerGroupService.removeDiscountRuleFromGroup(customerGroupId, discountRuleId);
+    res.status(200).json({ message: 'Discount rule removed from group successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = router;

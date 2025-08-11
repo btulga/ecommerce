@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id',
       },
       onDelete: 'CASCADE',
-      onUpdate: 'CASCADE',
+      onUpdate: 'CASCADE', // Use ON UPDATE CASCADE for consistency
       primaryKey: true, // Composite primary key
     },
     customer_id: {
@@ -41,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id',
       },
       onDelete: 'CASCADE',
-      onUpdate: 'CASCADE',
+      onUpdate: 'CASCADE', // Use ON UPDATE CASCADE for consistency
       primaryKey: true, // Composite primary key
     },
   }, {
@@ -49,6 +49,6 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'CustomerGroupCustomer',
     tableName: 'customer_group_customers',
     timestamps: false, // Join tables often don't need timestamps
-  });
+  }); // Added semicolon for consistency
   return CustomerGroupCustomer;
 };

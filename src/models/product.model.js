@@ -37,6 +37,48 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
   }
+
+  // Method to calculate the price for a customer considering discount rules
+  Product.prototype.getPriceForCustomer = async function(customerId, models) {
+    // Assume 'this' is the Product instance
+    // Assume you have a way to get the customer and their groups
+    const customer = await models.Customer.findByPk(customerId, {
+      include: [{
+        model: models.CustomerGroup,
+        through: models.CustomerGroupCustomer,
+        as: 'customer_groups'
+      }]
+    });
+
+    let discountedPrice = this.price; // Assume product has a base price field
+
+    if (customer && customer.customer_groups && customer.customer_groups.length > 0) {
+      // Find active discount rules for the customer's groups that apply to this product
+      const activeDiscountRule = await models.DiscountRule.findOne({
+        include: [{
+          model: models.CustomerGroup,
+          through: models.DiscountRuleCustomerGroup,
+          as: 'customer_groups',
+          where: { id: customer.customer_groups.map(group => group.id) }
+        }, {
+          model: models.Product,
+          through: models.DiscountRuleProduct,
+          where: { id: this.id }
+        }],
+        where: {
+          start_date: { [models.Sequelize.Op.lte]: new Date() },
+          end_date: { [models.Sequelize.Op.gte]: new Date() }
+        }
+      });
+
+      if (activeDiscountRule && activeDiscountRule.discount_percentage) {
+        discountedPrice = this.price * (1 - activeDiscountRule.discount_percentage / 100);
+      }
+    }
+
+    return discountedPrice;
+  };
+
   Product.init({
     // Keeping your existing fields
     id: { // Added ID for consistency
@@ -65,7 +107,8 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id',
       },
     }, // Added foreign key for product category
-    type: DataTypes.STRING // Added field for product type
+    type: DataTypes.STRING, // Added field for product type
+    price: DataTypes.DECIMAL(10, 2) // Assuming a price field exists
   }, {
     sequelize,
     modelName: 'Product',

@@ -1,6 +1,6 @@
 'use strict';
 
-const { CustomerGroup, CustomerGroupCustomer } = require('../models');
+const { CustomerGroup, CustomerGroupCustomer, DiscountRuleCustomerGroup } = require('../models');
 
 class CustomerGroupService {
   /**
@@ -93,6 +93,41 @@ class CustomerGroupService {
         customer_group_id: customerGroupId,
         customer_id: customerId,
       },
+    });
+  }
+
+  /**
+   * Applies a discount rule to a customer group.
+   * @param {string} customerGroupId - The ID of the customer group.
+   * @param {string} discountRuleId - The ID of the discount rule to apply.
+   * @returns {Promise<DiscountRuleCustomerGroup>} The created join table entry.
+   */
+  async addDiscountRuleToGroup(customerGroupId, discountRuleId) {
+    // Check if the relationship already exists to avoid duplicates
+    const existing = await DiscountRuleCustomerGroup.findOne({
+      where: { customer_group_id: customerGroupId, discount_rule_id: discountRuleId },
+    });
+
+    if (existing) {
+      // Relationship already exists, maybe return the existing one or throw an error
+      return existing;
+    }
+
+    return DiscountRuleCustomerGroup.create({
+      customer_group_id: customerGroupId,
+      discount_rule_id: discountRuleId,
+    });
+  }
+
+  /**
+   * Removes a discount rule from a customer group.
+   * @param {string} customerGroupId - The ID of the customer group.
+   * @param {string} discountRuleId - The ID of the discount rule to remove.
+   * @returns {Promise<number>} The number of rows deleted from the join table.
+   */
+  async removeDiscountRuleFromGroup(customerGroupId, discountRuleId) {
+    return DiscountRuleCustomerGroup.destroy({
+      where: { customer_group_id: customerGroupId, discount_rule_id: discountRuleId },
     });
   }
 }
