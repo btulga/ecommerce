@@ -11,13 +11,14 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Campaign.hasMany(models.Promotion, { foreignKey: 'campaignId' });
+      Campaign.belongsToMany(models.DiscountRule, { through: 'CampaignDiscountRule', foreignKey: 'campaignId' });
     }
   }
   Campaign.init({
     name: DataTypes.STRING,
     description: DataTypes.TEXT,
-    startDate: DataTypes.DATE,
-    endDate: DataTypes.DATE
+    starts_at: DataTypes.DATE,
+    ends_at: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Campaign',

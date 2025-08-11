@@ -1,7 +1,17 @@
 const { DataTypes, Model } = require('sequelize');
 
 module.exports = (sequelize) => {
-  class Coupon extends Model {}
+  class Coupon extends Model {
+    static associate(models) { 
+      models.Coupon.belongsToMany(models.DiscountRule, 
+        { 
+          through: models.CouponDiscountRule, 
+          foreignKey: 'couponId', 
+          otherKey: 'discountRuleId' 
+        }
+      ); 
+    }
+  }
 
   Coupon.init({
     id: {
@@ -35,8 +45,7 @@ module.exports = (sequelize) => {
     ends_at: {
         type: DataTypes.DATE,
         allowNull: true,
-    }
-    // Foreign key for DiscountRule will be added via associations
+    },
   }, {
     sequelize,
     modelName: 'Coupon',
