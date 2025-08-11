@@ -25,6 +25,12 @@ module.exports = (sequelize) => {
         as: 'sales_channels'
       });
 
+      DiscountRule.belongsToMany(models.CustomerGroup, {
+        through: 'discount_rule_customer_group',
+        foreignKey: 'discount_rule_id',
+        as: 'customer_groups'
+      });
+
       // A discount rule can belong to many campaigns
       DiscountRule.belongsToMany(models.Campaign, {
         through: 'campaign_discount_rules',
