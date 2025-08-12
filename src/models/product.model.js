@@ -88,7 +88,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     title: DataTypes.STRING,
     description: DataTypes.TEXT,
-    handle: { // URL friendly string
+    handle: { // URL friendly string 'unit-top-up', 'data-add-on'
         type: DataTypes.STRING,
         unique: true
     },
@@ -107,8 +107,12 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id',
       },
     }, // Added foreign key for product category
-    type: DataTypes.STRING, // Added field for product type
-    price: DataTypes.DECIMAL(10, 2) // Assuming a price field exists
+    type: DataTypes.STRING, // Added field for product type 'physical', 'digital', 'service'
+    price: DataTypes.DECIMAL(10, 2), // Assuming a price field exists
+    is_deliverable: { // New field for deliverability
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    }
   }, {
     sequelize,
     modelName: 'Product',

@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'product_variant_id',
         as: 'options', // or values, depending on how you want to name the association
       });
+      this.hasMany(models.Inventory, {
+        foreignKey: 'variant_id',
+        as: 'inventory',
+      });
       // define association here
     }
   }

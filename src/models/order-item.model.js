@@ -23,7 +23,10 @@ module.exports = (sequelize, DataTypes) => {
     unit_price: DataTypes.INTEGER,
     order_id: DataTypes.STRING,
     variant_id: DataTypes.STRING,
-    target_phone_number: DataTypes.STRING
+    target_phone_number: DataTypes.STRING,
+    selected_number: DataTypes.STRING,
+    activation_code: DataTypes.STRING,
+    activation_status: DataTypes.STRING // 'pending', 'activated', 'activate_later'
   }, {
     sequelize,
     modelName: 'OrderItem',

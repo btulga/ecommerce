@@ -2,8 +2,10 @@
 const {
   Model
 } = require('sequelize');
+const { v4: uuidv4 } = require('uuid');
+
 module.exports = (sequelize, DataTypes) => {
-  class CartItem extends Model {
+  class Location extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -13,18 +15,17 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  CartItem.init({
-    cart_id: DataTypes.STRING,
-    order_id: DataTypes.STRING,
-    variant_id: DataTypes.STRING,
-    quantity: DataTypes.INTEGER,
-    unit_price: DataTypes.INTEGER,
-    target_phone_number: DataTypes.STRING,
-    selected_number: DataTypes.STRING,
-    activation_code: DataTypes.STRING
+  Location.init({
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: () => uuidv4(),
+      primaryKey: true,
+    },
+    name: DataTypes.STRING,
+    address: DataTypes.STRING
   }, {
     sequelize,
-    modelName: 'CartItem',
+    modelName: 'Location',
   });
-  return CartItem;
+  return Location;
 };

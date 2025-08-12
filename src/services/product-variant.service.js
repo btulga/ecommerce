@@ -1,4 +1,4 @@
-'use strict';
+'use strict'; // Import Inventory and Location models
 
 const { ProductVariant, ProductOptionValue, ProductVariantOption } = require('../models');
 const { v4: uuidv4 } = require('uuid');
@@ -40,10 +40,20 @@ const create = async (data) => {
 const findById = async (id) => {
   return ProductVariant.findByPk(id, {
     include: [{
-      model: ProductOptionValue,
+      model: db.ProductOptionValue, // Make sure db is defined or imported
       as: 'option_values',
       through: { attributes: [] } // Exclude join table attributes
-    }]
+    }, // Include Inventory association
+    {
+      model: db.Inventory, // Make sure db is defined or imported
+      as: 'inventory',
+      include: [{
+      model: ProductOptionValue,
+      as: 'option_values',
+      through: { attributes: [] }, // Exclude join table attributes
+      model: db.Location, // Include Location associated with inventory
+      as: 'location'
+    }]}]
   });
 };
 
@@ -54,10 +64,20 @@ const findById = async (id) => {
 const findAll = async () => {
   return ProductVariant.findAll({
      include: [{
-      model: ProductOptionValue,
+      model: db.ProductOptionValue, // Make sure db is defined or imported
       as: 'option_values',
       through: { attributes: [] }
-    }]
+    }, // Include Inventory association
+    {
+      model: db.Inventory, // Make sure db is defined or imported
+      as: 'inventory',
+      include: [{
+      model: ProductOptionValue,
+      as: 'option_values',
+      through: { attributes: [] },
+      model: db.Location, // Include Location associated with inventory
+      as: 'location'
+    }]}]
   });
 };
 
@@ -70,10 +90,20 @@ const findByProductId = async (productId) => {
   return ProductVariant.findAll({
     where: { product_id: productId },
     include: [{
-      model: ProductOptionValue,
+      model: db.ProductOptionValue, // Make sure db is defined or imported
       as: 'option_values',
       through: { attributes: [] }
-    }]
+    }, // Include Inventory association
+    {
+      model: db.Inventory, // Make sure db is defined or imported
+      as: 'inventory',
+      include: [{
+      model: ProductOptionValue,
+      as: 'option_values',
+      through: { attributes: [] },
+      model: db.Location, // Include Location associated with inventory
+      as: 'location'
+    }]}]
   });
 };
 

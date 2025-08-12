@@ -4,114 +4,79 @@ const db = require('../models'); // Import models
 const TelcoService = {
 
   /**
-   * Performs a top-up operation via a mock telco API.
-   * IMPORTANT: This is a mock implementation.
-   * You need to replace the logic inside this function with actual
-   * integration code to communicate with your chosen telco provider's API.
-   *
-   * @param {string} phoneNumber - The phone number to top up.
-   * @param {string} telcoProductId - The ID of the top-up product as recognized by the telco.
-   * @param {number} quantity - The quantity of the top-up (e.g., number of units).
-   * @returns {Promise<object>} A promise that resolves with the result of the top-up.
-   */
-  performTopUp: async (phoneNumber, telcoProductId, quantity) => {
-    console.log(`[TelcoService] Simulating top-up for phone number: ${phoneNumber}, Product ID: ${telcoProductId}, Quantity: ${quantity}`);
-
-    // --- Mock Telco API Call Simulation ---
-    // In a real implementation, you would make an HTTP request to the telco's API here.
-    // This might involve:
-    // - Constructing the request URL and payload based on the telco's API documentation.
-    // - Adding authentication headers or parameters.
-    // - Sending the request using a library like axios or node-fetch.
-    // - Handling the response and checking for success or failure.
-    // - Parsing the response to get transaction details, status codes, etc.
-    // --- End of Mock Simulation ---
-
-    // Simulate a network delay for the mock API call
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate 1 second delay
-
-    // Simulate a successful response
-    const mockResponse = {
-      status: 'success',
-      transaction_id: `telco_txn_${new Date().getTime()}_${Math.random().toString(16).slice(2)}`,
-      message: 'Top-up successful',
-      // You might receive other data like updated balance, expiry date, etc.
-    };
-
-    console.log(`[TelcoService] Mock top-up successful for ${phoneNumber}`);
-    return mockResponse;
-
-    // --- Mock Error Simulation (Example) ---
-    // To simulate an error, you could throw an error or return an error object:
-    // if (phoneNumber === 'invalid_number') {
-    //   console.error(`[TelcoService] Mock top-up failed for ${phoneNumber}: Invalid phone number`);
-    //   throw new Error('Invalid phone number');
-    // }
-    // --- End of Mock Error Simulation ---
-  },
-
-  // You might add other telco-related functions here, e.g.:
-  /**
-   * Simulates fetching a list of available phone numbers from a telco API.
-   * IMPORTANT: This is a mock implementation.
-   * You need to replace the logic inside this function with actual
-   * integration code to communicate with your chosen telco provider's API
-   * for fetching available numbers.
-   *
-   * @returns {Promise<string[]>} A promise that resolves with an array of available phone numbers.
-   */
-  getAvailablePhoneNumbers: async () => {
-    console.log('[TelcoService] Simulating fetching available phone numbers.');
-
-    // Simulate a network delay for the mock API call
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate 0.5 second delay
-
-    // Simulate a list of available phone numbers
-    const mockPhoneNumbers = [
-      '99112233',
-      '88001122',
-      '96965544',
-      '91234567',
-      '95876543',
-    ];
-
-    // Save fetched numbers to our database if they don't exist
-    for (const number of mockPhoneNumbers) {
-      await db.PhoneNumber.findOrCreate({
-        where: { phone_number: number },
-        defaults: { phone_number: number, status: 'available' } // Set initial status
-      });
-    }
-
-    return mockPhoneNumbers; // Or you could return the saved numbers from your DB
-  },
-
-  /**
-   * Simulates activating a phone number via a mock telco API.
-   * IMPORTANT: This is a mock implementation.
-   * You need to replace the logic inside this function with actual
-   * integration code to communicate with your chosen telco provider's API
-   * for activating phone numbers.
-   *
-   * @param {string} phoneNumber - The phone number to activate.
-   * @param {string} orderItemId - The ID of the order item associated with this activation (for tracking/logging).
+   * Placeholder function to activate a phone number via a telco API.
+   * This needs to be implemented with actual API integration.
+   * @param {string} selectedNumber - The phone number to activate.
+   * @param {string} [activationCode] - The activation code for physical SIMs (optional).
    * @returns {Promise<object>} A promise that resolves with the result of the activation.
    */
-  activatePhoneNumber: async (phoneNumber, orderItemId) => {
-    console.log(`[TelcoService] Simulating activating phone number: ${phoneNumber} for order item: ${orderItemId}`);
+  activateNumber: async (selectedNumber, activationCode) => {
+    console.log(`[TelcoService] Activating number: ${selectedNumber}` + (activationCode ? ` with code: ${activationCode}` : ''));
+    // TODO: Implement actual telco API call for number activation
+    // This might involve different calls for eSIM vs. physical SIM
+    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+    console.log(`[TelcoService] Mock activation successful for ${selectedNumber}`);
+    return { status: 'success', message: 'Number activated successfully (mock)' };
+  },
 
-    // --- Mock Telco API Call Simulation ---
-    // In a real implementation, you would make an HTTP request to the telco's API here
-    // to initiate the phone number activation process.
-    // --- End of Mock Simulation ---
+  /**
+   * Placeholder function to perform a unit top-up via a telco API.
+   * This needs to be implemented with actual API integration.
+   * @param {string} phoneNumber - The phone number to top up.
+   * @param {number} amount - The amount of units to top up.
+   * @returns {Promise<object>} A promise that resolves with the result of the top-up.
+   */
+  topUp: async (phoneNumber, amount) => {
+    console.log(`[TelcoService] Topping up ${phoneNumber} with ${amount} units.`);
+    // TODO: Implement actual telco API call for unit top-up
+    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+    console.log(`[TelcoService] Mock top-up successful for ${phoneNumber}`);
+    return { status: 'success', message: 'Top-up successful (mock)' };
+  },
 
-    // Simulate a network delay for the mock API call
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate 1.5 second delay
+  /**
+   * Placeholder function to add data to a phone number via a telco API.
+   * This needs to be implemented with actual API integration.
+   * @param {string} phoneNumber - The phone number to add data to.
+   * @param {number} amount - The amount of data to add (e.g., in MB or GB).
+   * @returns {Promise<object>} A promise that resolves with the result of adding data.
+   */
+  addData: async (phoneNumber, amount) => {
+    console.log(`[TelcoService] Adding ${amount} data to ${phoneNumber}.`);
+    // TODO: Implement actual telco API call for adding data
+    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+    console.log(`[TelcoService] Mock add data successful for ${phoneNumber}`);
+    return { status: 'success', message: 'Data added successfully (mock)' };
+  },
 
-    console.log(`[TelcoService] Mock activation successful for ${phoneNumber}`);
-    // Simulate a successful response
-    return { status: 'activated', message: 'Phone number activated successfully' };
-  }
+  /**
+   * Placeholder function to reactivate an eSIM via a telco API.
+   * This needs to be implemented with actual API integration.
+   * @param {string} phoneNumber - The phone number associated with the eSIM.
+   * @returns {Promise<object>} A promise that resolves with the result of the reactivation.
+   */
+  reactivateEsim: async (phoneNumber) => {
+    console.log(`[TelcoService] Reactivating eSIM for ${phoneNumber}.`);
+    // TODO: Implement actual telco API call for eSIM reactivation
+    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+    console.log(`[TelcoService] Mock eSIM reactivation successful for ${phoneNumber}`);
+    return { status: 'success', message: 'eSIM reactivated successfully (mock)' };
+  },
+
+  /**
+   * Placeholder function to provision a subscription via a telco API.
+   * This needs to be implemented with actual API integration.
+   * @param {string} phoneNumber - The phone number for the subscription.
+   * @param {object} subscriptionDetails - Details of the subscription to provision.
+   * @returns {Promise<object>} A promise that resolves with the result of the provisioning.
+   */
+  provisionSubscription: async (phoneNumber, subscriptionDetails) => {
+    console.log(`[TelcoService] Provisioning subscription for ${phoneNumber}. Details: ${JSON.stringify(subscriptionDetails)}`);
+    // TODO: Implement actual telco API call for subscription provisioning
+    await new Promise(resolve => setTimeout(resolve, 2500)); // Simulate API call
+    console.log(`[TelcoService] Mock subscription provisioning successful for ${phoneNumber}`);
+    return { status: 'success', message: 'Subscription provisioned successfully (mock)' };
+  },
 };
 
 module.exports = TelcoService;

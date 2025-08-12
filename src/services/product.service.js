@@ -1,6 +1,9 @@
 const {
   Product,
-  ProductCategory
+  ProductCategory,
+  ProductVariant,
+  Inventory,
+  Location
 } = require('../models');
 
 /**
@@ -27,7 +30,19 @@ async function createProduct(productData) {
 async function findProductById(id, options = {}) {
   try {
     const product = await Product.findByPk(id, options);
-    return product;
+    if (product) {
+      const variants = await product.getVariants({
+        include: [{
+          model: Inventory,
+          as: 'inventory',
+          include: [{
+            model: Location,
+            as: 'location'
+          }]
+        }]
+      });
+      product.dataValues.variants = variants;
+    }    return product;
   } catch (error) {
     throw new Error('Error finding product: ' + error.message);
   }
@@ -49,8 +64,20 @@ async function findAllProducts(filter = {}, options = {}) {
     const products = await Product.findAll({
       where,
       ...options,
+      include: [{
+        model: ProductVariant,
+        as: 'variants',
+        include: [{
+          model: Inventory,
+          as: 'inventory',
+          include: [{
+            model: Location,
+            as: 'location'
+          }]
+        }]
+      }]
     });
-    return products;
+    return products;    
   } catch (error) {
     throw new Error('Error fetching products: ' + error.message);
   }

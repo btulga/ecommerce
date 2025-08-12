@@ -1,5 +1,6 @@
 const db = require('../models');
 const CouponService = require('./coupon.service');
+const OrderService = require('./order.service'); // Import OrderService
 const PaymentService = require('./payment.service'); // Import PaymentService
 
 const CartService = {
@@ -52,7 +53,8 @@ const CartService = {
     }
   },
 
-  addOrUpdateItem: async (cartId, variantId, quantity, targetPhoneNumber = null) => {
+  addOrUpdateItem: async (cartId, variantId, quantity, locationId = null,
+ targetPhoneNumber = null, selectedNumber = null, activationCode = null) => {
     try {
       const cart = await CartService.getCart(cartId);
       const variant = await db.ProductVariant.findByPk(variantId, {
@@ -66,7 +68,20 @@ const CartService = {
         throw new Error("Product variant not found.");
       }
 
-      const isServiceProduct = variant.product && variant.product.type === 'service';
+      // Check inventory at the specified location if a locationId is provided
+      if (locationId) {
+        const inventory = await db.Inventory.findOne({
+          where: {
+            variant_id: variantId,
+            location_id: locationId,
+          },
+        });
+        if (!inventory || inventory.quantity < quantity) {
+          throw new Error("Not enough inventory at this location.");
+        }
+      }
+
+      const requiresShipping = variant.product && variant.product.is_deliverable;
 
       let cartItem = await db.CartItem.findOne({
         where: {
@@ -76,20 +91,29 @@ const CartService = {
       });
 
       if (cartItem) {
-        // If it's a service product and a phone number is provided, update it
-        if (isServiceProduct && targetPhoneNumber) {
+        // Update existing item
+        if (variant.product && variant.product.type === 'service' && targetPhoneNumber) {
             cartItem.target_phone_number = targetPhoneNumber;
-        } else if (isServiceProduct && !targetPhoneNumber) {
-             // Optionally handle the case where a service product is added without a phone number
-             // throw new Error("Phone number is required for this product.");
+        } else if (variant.product && variant.product.type === 'digital' && selectedNumber) {
+            cartItem.selected_number = selectedNumber;
+        }
+         if (activationCode) {
+             cartItem.activation_code = activationCode;
+         }
+        if (locationId) {
+             cartItem.location_id = locationId;
         }
         cartItem.quantity += quantity;
+
         await cartItem.save();
       } else {
         cartItem = await db.CartItem.create({
           cart_id: cartId,
           variant_id: variantId,
           target_phone_number: isServiceProduct ? targetPhoneNumber : null, // Save phone number for service products
+          location_id: locationId, // Store the selected location
+ selected_number: selectedNumber, // Store selected number
+ activation_code: activationCode, // Store activation code
           quantity: quantity,
           unit_price: variant.price,
         });
@@ -161,39 +185,18 @@ const CartService = {
           throw new Error("Cannot complete an empty cart.");
       }
       // TODO: Add more validations here (e.g., shipping address, payment method, inventory check)
-      
-      // Check if the cart contains any physical products
-      const hasPhysicalProducts = cart.items.some(item =>
-        item.variant && item.variant.product && item.variant.product.type === 'physical'
+
+      // Check if the cart contains any deliverable products
+      const hasDeliverableProducts = cart.items.some(item =>
+        item.variant && item.variant.product && item.variant.product.is_deliverable === true
       );
 
-      // TODO: If hasPhysicalProducts, ensure shipping address is provided in the cart
-      // 1. Create the Order
-      const order = await db.Order.create({
-        customer_id: cart.customer_id,
-        cart_id: cart.id,
-        email: cart.customer ? cart.customer.email : '', // Use customer email if available
-        currency_code: 'usd', // Or fetch from a config/region
-        tax_rate: 0, // Placeholder
-        status: 'pending', // Initial status
-        payment_status: 'awaiting',
-        fulfillment_status: 'not_fulfilled',
-        // Conditionally include shipping addresses if physical products exist
-        shipping_address_id: hasPhysicalProducts ? cart.shipping_address_id : null,
-      }, { transaction: t });
-
-      // 2. Create OrderItems from CartItems
-      await Promise.all(cart.items.map(async (cartItem) => {
-        await db.OrderItem.create({
-          order_id: order.id,
-          variant_id: cartItem.variant_id,
-          quantity: cartItem.quantity,
-          unit_price: cartItem.unit_price,
-          target_phone_number: cartItem.target_phone_number, // Copy phone number to order item
-          // You might add product name, thumbnail etc. from variant/product here
-        }, { transaction: t });
-      }));
-
+      // TODO: Add more validations here (e.g., payment method, inventory check)
+      // If hasDeliverableProducts, ensure shipping address is provided in the cart
+      if (hasDeliverableProducts && !cart.shipping_address_id) {
+          throw new Error("Shipping address is required for this cart.");
+      }
+      
       // 3. Create Payment record
       await PaymentService.createPayment(cart, order, t);
 
@@ -201,8 +204,7 @@ const CartService = {
       // cart.status = 'completed'; 
       // await cart.save({ transaction: t });
       
-      await t.commit();
-      return order; // Return the newly created order
+      await t.commit(); // Commit the transaction managed by completeCart
 
     } catch (error) {
       await t.rollback();
