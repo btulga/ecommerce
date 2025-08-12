@@ -62,7 +62,6 @@ module.exports = (sequelize, DataTypes) => {
         validate: { isEmail: true }
     },
     shipping_address_id: DataTypes.UUID,
-    // region_id: DataTypes.STRING, // <-- REMOVED
     currency_code: {
         type: DataTypes.STRING,
         allowNull: false

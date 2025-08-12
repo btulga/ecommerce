@@ -112,8 +112,8 @@ const CartService = {
           variant_id: variantId,
           target_phone_number: isServiceProduct ? targetPhoneNumber : null, // Save phone number for service products
           location_id: locationId, // Store the selected location
- selected_number: selectedNumber, // Store selected number
- activation_code: activationCode, // Store activation code
+          selected_number: selectedNumber, // Store selected number
+          activation_code: activationCode, // Store activation code
           quantity: quantity,
           unit_price: variant.price,
         });
@@ -196,15 +196,16 @@ const CartService = {
       if (hasDeliverableProducts && !cart.shipping_address_id) {
           throw new Error("Shipping address is required for this cart.");
       }
-      
-      // 3. Create Payment record
-      await PaymentService.createPayment(cart, order, t);
+
+      // Call OrderService to create the order and handle fulfillment/payment
+      const order = await OrderService.createOrderFromCart(cart, t);
 
       // 4. Mark cart as completed/archived (optional, depending on flow)
       // cart.status = 'completed'; 
       // await cart.save({ transaction: t });
-      
+
       await t.commit(); // Commit the transaction managed by completeCart
+      return order; // Return the newly created order
 
     } catch (error) {
       await t.rollback();
