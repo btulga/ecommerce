@@ -29,11 +29,11 @@ module.exports = (sequelize, DataTypes) => {
         through: 'discount_rule_products',
         foreignKey: 'product_id'
       });
-
-      // Product belongs to one ProductCategory
-      Product.belongsTo(models.ProductCategory, {
-        foreignKey: 'category_id',
-        as: 'category'
+      
+      // Product has many Categories through ProductCategory
+      Product.belongsToMany(models.Category, {
+        through: models.ProductCategory,
+        foreignKey: 'product_id'
       });
     }
   }

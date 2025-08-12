@@ -15,6 +15,7 @@
 
   # Sets environment variables in the workspace
   env = {
+    COMMONJS_FORMAT = "true";
     # Add your AI agent requirements as an environment variable
     AI_AGENT_REQUIREMENTS = ''
       # AI Agent Requirements for E-commerce API Development
@@ -98,6 +99,8 @@
           - Write code in different programming styles (e.g., Class-based vs. Functional).
           - Refactor existing code from one style to another upon request without breaking functionality.
       - **Responsiveness to Feedback:**
+ - Be able to write code in a functional style and prioritize it when creating new files or refactoring existing ones.
+      - Refactor existing code from one style to another upon request without breaking functionality.
           - Correct its own mistakes when pointed out.
           - Understand and act on conversational, affirmative commands.
       - **Documentation:**

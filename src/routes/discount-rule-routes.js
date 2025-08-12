@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import {
+const { Router } = require('express');
+const {
   createDiscountRule,
   getDiscountRuleById,
   updateDiscountRule,
@@ -7,18 +7,18 @@ import {
   addProductToDiscountRule,
   removeProductFromDiscountRule,
   addSalesChannelToDiscountRule,
-  removeSalesChannelFromDiscountRule,
-} from '../controllers/discount-rule.controller';
+  removeSalesChannelFromSalesChannel, // Assuming this should be consistent with usage below
+} = require('../controllers/discount-rule.controller');
 
-const discountRuleRouter = Router();
+const router = Router();
 
-discountRuleRouter.post('/', createDiscountRule);
-discountRuleRouter.get('/:id', getDiscountRuleById);
-discountRuleRouter.put('/:id', updateDiscountRule);
-discountRuleRouter.delete('/:id', deleteDiscountRule);
-discountRuleRouter.post('/:id/products', addProductToDiscountRule);
-discountRuleRouter.delete('/:id/products/:productId', removeProductFromDiscountRule);
-discountRuleRouter.post('/:id/sales-channels', addSalesChannelToDiscountRule);
-discountRuleRouter.delete('/:id/sales-channels/:salesChannelId', removeSalesChannelFromSalesChannel);
+router.post('/', createDiscountRule);
+router.get('/:id', getDiscountRuleById);
+router.put('/:id', updateDiscountRule);
+router.delete('/:id', deleteDiscountRule);
+router.post('/:id/products', addProductToDiscountRule);
+router.delete('/:id/products/:productId', removeProductFromDiscountRule);
+router.post('/:id/sales-channels', addSalesChannelToDiscountRule);
+router.delete('/:id/sales-channels/:salesChannelId', removeSalesChannelFromSalesChannel);
 
-export default discountRuleRouter;
+module.exports = router;

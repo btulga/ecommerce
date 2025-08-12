@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import CampaignController from '../controllers/campaign.controller';
+const { Router } = require('express');
+const CampaignController = require('../controllers/campaign.controller');
 
 const router = Router();
 
@@ -14,4 +14,4 @@ router.delete('/:id', CampaignController.deleteCampaign);
 router.post('/:campaignId/discount-rules/:discountRuleId', CampaignController.addDiscountRuleToCampaign);
 router.delete('/:campaignId/discount-rules/:discountRuleId', CampaignController.removeDiscountRuleFromCampaign);
 
-export default router;
+module.exports = router;

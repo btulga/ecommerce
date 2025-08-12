@@ -1,15 +1,15 @@
-import {
-  createDiscountRule as createDiscountRuleService,
-  getDiscountRule as getDiscountRuleService,
-  updateDiscountRule as updateDiscountRuleService,
-  deleteDiscountRule as deleteDiscountRuleService,
-  addProductToDiscountRule,
-  removeProductFromDiscountRule,
-  addSalesChannelToDiscountRule,
-  removeSalesChannelFromDiscountRule,
-} from '../services/discount-rule.service';
+const {
+ createDiscountRule: createDiscountRuleService,
+ getDiscountRule: getDiscountRuleService,
+ updateDiscountRule: updateDiscountRuleService,
+ deleteDiscountRule: deleteDiscountRuleService,
+ addProductToDiscountRule: addProductToDiscountRuleService,
+ removeProductFromDiscountRule: removeProductFromDiscountRuleService,
+ addSalesChannelToDiscountRule: addSalesChannelToDiscountRuleService,
+ removeSalesChannelFromDiscountRule: removeSalesChannelFromDiscountRuleService,
+} = require('../services/discount-rule.service');
 
-export const createDiscountRule = async (req, res) => {
+const createDiscountRule = async (req, res) => {
   try {
     const discountRule = await createDiscountRuleService(req.body);
     res.status(201).json(discountRule);
@@ -18,7 +18,7 @@ export const createDiscountRule = async (req, res) => {
   }
 };
 
-export const getDiscountRule = async (req, res) => {
+const getDiscountRule = async (req, res) => {
   try {
     const discountRule = await getDiscountRuleService(req.params.id);
     if (discountRule) {
@@ -31,7 +31,7 @@ export const getDiscountRule = async (req, res) => {
   }
 };
 
-export const updateDiscountRule = async (req, res) => {
+const updateDiscountRule = async (req, res) => {
   try {
     const updatedDiscountRule = await updateDiscountRuleService(req.params.id, req.body);
     if (updatedDiscountRule) {
@@ -44,34 +44,42 @@ export const updateDiscountRule = async (req, res) => {
   }
 };
 
-export const deleteDiscountRule = async (req, res) => {
+const deleteDiscountRule = async (req, res) => {
   try {
-    const discountRule = await createDiscountRule(req.body);
-    res.status(201).json(discountRule);
+    const deletedDiscountRule = await deleteDiscountRuleService(req.params.id);
+    if (deletedDiscountRule) {
+      res.json({ message: 'Discount rule deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'Discount rule not found' });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export const addProductToDiscountRule = async (req, res) => {
+const addProductToDiscountRule = async (req, res) => {
   try {
     const { productId } = req.body;
-    const discountRule = await addProductToDiscountRule(req.params.id, productId);
+    const discountRule = await addProductToDiscountRuleService(req.params.id, productId);
     res.json(discountRule);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-});
+};
 
-export const removeProductFromDiscountRule = async (req, res) => {
+const removeProductFromDiscountRule = async (req, res) => {
   try {
     const { discountRuleId, productId } = req.params;
-    const discountRule = await removeProductFromDiscountRule(discountRuleId, productId);
-    res.json(discountRule);
+    const success = await removeProductFromDiscountRuleService(discountRuleId, productId);
+    if (success) {
+      res.json({ message: 'Product removed from discount rule' });
+    } else {
+      res.status(404).json({ message: 'Discount rule or product not found' });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-});
+};
 
 export const addSalesChannelToDiscountRule = async (req, res) => {
   try {
@@ -81,7 +89,7 @@ export const addSalesChannelToDiscountRule = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-});
+};
 
 export const removeSalesChannelFromDiscountRule = async (req, res) => {
   try {
@@ -91,4 +99,4 @@ export const removeSalesChannelFromDiscountRule = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-});
+};
