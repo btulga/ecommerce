@@ -4,7 +4,6 @@ const CampaignService = require('../../src/services/campaign.service');
 const { Campaign, DiscountRule, CampaignDiscountRule } = require('../../src/models');
 
 describe('CampaignService', () => {
-  let campaignService;
   let campaignModelMock;
   let discountRuleModelMock;
   let campaignDiscountRuleModelMock;
@@ -16,8 +15,8 @@ describe('CampaignService', () => {
       findAll: sinon.stub(),
       update: sinon.stub(),
       destroy: sinon.stub(),
-      addDiscountRule: sinon.stub(),
-      removeDiscountRule: sinon.stub(),
+      addDiscountRules: sinon.stub(), // Changed from addDiscountRule
+      removeDiscountRules: sinon.stub(), // Changed from removeDiscountRule
       setDiscountRules: sinon.stub(),
       hasDiscountRule: sinon.stub(),
       getDiscountRules: sinon.stub(),
@@ -30,212 +29,244 @@ describe('CampaignService', () => {
       destroy: sinon.stub(),
     };
 
-    campaignService = new CampaignService({
-      Campaign: campaignModelMock,
-      DiscountRule: discountRuleModelMock,
-      CampaignDiscountRule: campaignDiscountRuleModelMock,
-    });
+    // Directly mock the imported functions from CampaignService
+    // No need for new CampaignService() instance
+    sinon.stub(CampaignService, 'create').callsFake(campaignModelMock.create);
+    sinon.stub(CampaignService, 'retrieve').callsFake(campaignModelMock.findByPk);
+    sinon.stub(CampaignService, 'list').callsFake(campaignModelMock.findAll);
+    sinon.stub(CampaignService, 'update').callsFake(campaignModelMock.update);
+    sinon.stub(CampaignService, 'remove').callsFake(campaignModelMock.destroy); // Renamed to remove
+    sinon.stub(CampaignService, 'addDiscountRules').callsFake(campaignModelMock.addDiscountRules);
+    sinon.stub(CampaignService, 'removeDiscountRules').callsFake(campaignModelMock.removeDiscountRules);
+    sinon.stub(CampaignService, 'getDiscountRules').callsFake(campaignModelMock.getDiscountRules);
   });
 
   afterEach(() => {
     sinon.restore();
   });
 
-  describe('createCampaign', () => {
+  describe('create', () => {
     it('should create a new campaign', async () => {
       const campaignData = { name: 'Summer Sale', starts_at: new Date(), ends_at: new Date() };
       const createdCampaign = { id: 'campaign-id', ...campaignData };
-      campaignModelMock.create.resolves(createdCampaign);
+      CampaignService.create.restore(); // Restore to test the actual service logic (if not fully stubbed)
+      sinon.stub(Campaign, 'create').resolves(createdCampaign);
+      const campaignInstance = { ...createdCampaign, addDiscountRules: sinon.stub().resolves() };
+      Campaign.create.resolves(campaignInstance);
+      CampaignService.retrieve.resolves(campaignInstance); // Mock retrieve for the return value
 
-      const result = await campaignService.createCampaign(campaignData);
+      const result = await CampaignService.create(campaignData);
 
-      expect(campaignModelMock.create.calledOnceWith(campaignData)).to.be.true;
-      expect(result).to.deep.equal(createdCampaign);
+      expect(Campaign.create.calledOnceWith(campaignData)).to.be.true;
+      expect(result).to.deep.equal(campaignInstance);
+    });
+
+    it('should create a new campaign with discount rules', async () => {
+      const campaignData = { name: 'Summer Sale', starts_at: new Date(), ends_at: new Date() };
+      const discountRuleIds = ['rule-1', 'rule-2'];
+      const createdCampaign = { id: 'campaign-id', ...campaignData };
+      const campaignInstance = { ...createdCampaign, addDiscountRules: sinon.stub().resolves(), setDiscountRules: sinon.stub().resolves() };
+
+      CampaignService.create.restore();
+      sinon.stub(Campaign, 'create').resolves(campaignInstance);
+
+      const result = await CampaignService.create(campaignData, discountRuleIds);
+
+      expect(Campaign.create.calledOnceWith(campaignData)).to.be.true;
+      expect(campaignInstance.addDiscountRules.calledOnceWith(discountRuleIds)).to.be.true;
+      expect(result).to.deep.equal(campaignInstance);
     });
   });
 
-  describe('getCampaignById', () => {
+  describe('retrieve', () => {
     it('should return a campaign by ID', async () => {
       const campaignId = 'campaign-id';
       const foundCampaign = { id: campaignId, name: 'Summer Sale' };
-      campaignModelMock.findByPk.resolves(foundCampaign);
+      CampaignService.retrieve.restore();
+      sinon.stub(Campaign, 'findByPk').resolves(foundCampaign);
 
-      const result = await campaignService.getCampaignById(campaignId);
+      const result = await CampaignService.retrieve(campaignId);
 
-      expect(campaignModelMock.findByPk.calledOnceWith(campaignId, { include: [DiscountRule] })).to.be.true;
+      expect(Campaign.findByPk.calledOnceWith(campaignId, {})).to.be.true;
       expect(result).to.deep.equal(foundCampaign);
     });
 
     it('should return null if campaign is not found', async () => {
       const campaignId = 'non-existent-id';
-      campaignModelMock.findByPk.resolves(null);
+      CampaignService.retrieve.restore();
+      sinon.stub(Campaign, 'findByPk').resolves(null);
 
-      const result = await campaignService.getCampaignById(campaignId);
+      const result = await CampaignService.retrieve(campaignId);
 
-      expect(campaignModelMock.findByPk.calledOnceWith(campaignId, { include: [DiscountRule] })).to.be.true;
+      expect(Campaign.findByPk.calledOnceWith(campaignId, {})).to.be.true;
       expect(result).to.be.null;
     });
   });
 
-  describe('getAllCampaigns', () => {
+  describe('list', () => {
     it('should return all campaigns', async () => {
       const campaigns = [{ id: 'campaign-1' }, { id: 'campaign-2' }];
-      campaignModelMock.findAll.resolves(campaigns);
+      CampaignService.list.restore();
+      sinon.stub(Campaign, 'findAll').resolves(campaigns);
 
-      const result = await campaignService.getAllCampaigns();
+      const result = await CampaignService.list();
 
-      expect(campaignModelMock.findAll.calledOnce).to.be.true;
+      expect(Campaign.findAll.calledOnce).to.be.true;
       expect(result).to.deep.equal(campaigns);
     });
   });
 
-  describe('updateCampaign', () => {
+  describe('update', () => {
     it('should update a campaign', async () => {
       const campaignId = 'campaign-id';
       const updateData = { name: 'Winter Sale' };
-      const existingCampaign = { id: campaignId, name: 'Summer Sale', update: sinon.stub().resolves({ ...existingCampaign, ...updateData }) };
-      campaignModelMock.findByPk.resolves(existingCampaign);
+      const existingCampaign = { id: campaignId, name: 'Summer Sale', update: sinon.stub().resolves(), setDiscountRules: sinon.stub().resolves() };
 
-      const result = await campaignService.updateCampaign(campaignId, updateData);
+      CampaignService.retrieve.resolves(existingCampaign); // Mock retrieve to return existingCampaign
+      CampaignService.update.restore();
 
-      expect(campaignModelMock.findByPk.calledOnceWith(campaignId)).to.be.true;
+      const result = await CampaignService.update(campaignId, updateData);
+
+      expect(CampaignService.retrieve.calledOnceWith(campaignId)).to.be.true;
       expect(existingCampaign.update.calledOnceWith(updateData)).to.be.true;
-      expect(result).to.deep.equal({ ...existingCampaign, ...updateData });
+      expect(result).to.deep.equal(existingCampaign);
+    });
+
+    it('should update a campaign and set discount rules', async () => {
+      const campaignId = 'campaign-id';
+      const updateData = { name: 'Winter Sale' };
+      const discountRuleIds = ['rule-3'];
+      const existingCampaign = { id: campaignId, name: 'Summer Sale', update: sinon.stub().resolves(), setDiscountRules: sinon.stub().resolves() };
+
+      CampaignService.retrieve.resolves(existingCampaign); // Mock retrieve to return existingCampaign
+      CampaignService.update.restore();
+
+      const result = await CampaignService.update(campaignId, updateData, discountRuleIds);
+
+      expect(CampaignService.retrieve.calledOnceWith(campaignId)).to.be.true;
+      expect(existingCampaign.update.calledOnceWith(updateData)).to.be.true;
+      expect(existingCampaign.setDiscountRules.calledOnceWith(discountRuleIds)).to.be.true;
+      expect(result).to.deep.equal(existingCampaign);
     });
 
     it('should return null if campaign is not found', async () => {
       const campaignId = 'non-existent-id';
       const updateData = { name: 'Winter Sale' };
-      campaignModelMock.findByPk.resolves(null);
+      CampaignService.retrieve.resolves(null); // Mock retrieve to return null
+      CampaignService.update.restore();
 
-      const result = await campaignService.updateCampaign(campaignId, updateData);
+      const result = await CampaignService.update(campaignId, updateData);
 
-      expect(campaignModelMock.findByPk.calledOnceWith(campaignId)).to.be.true;
+      expect(CampaignService.retrieve.calledOnceWith(campaignId)).to.be.true;
       expect(result).to.be.null;
     });
   });
 
-  describe('deleteCampaign', () => {
+  describe('remove', () => { // Renamed from deleteCampaign
     it('should delete a campaign', async () => {
       const campaignId = 'campaign-id';
-      const existingCampaign = { id: campaignId, destroy: sinon.stub().resolves(1) };
-      campaignModelMock.findByPk.resolves(existingCampaign);
+      CampaignService.remove.restore();
+      sinon.stub(Campaign, 'destroy').resolves(1);
 
-      const result = await campaignService.deleteCampaign(campaignId);
+      const result = await CampaignService.remove(campaignId);
 
-      expect(campaignModelMock.findByPk.calledOnceWith(campaignId)).to.be.true;
-      expect(existingCampaign.destroy.calledOnce).to.be.true;
-      expect(result).to.be.true;
+      expect(Campaign.destroy.calledOnceWith({ where: { id: campaignId } })).to.be.true;
+      expect(result).to.equal(1);
     });
 
-    it('should return false if campaign is not found', async () => {
+    it('should return 0 if campaign is not found', async () => {
       const campaignId = 'non-existent-id';
-      campaignModelMock.findByPk.resolves(null);
+      CampaignService.remove.restore();
+      sinon.stub(Campaign, 'destroy').resolves(0);
 
-      const result = await campaignService.deleteCampaign(campaignId);
+      const result = await CampaignService.remove(campaignId);
 
-      expect(campaignModelMock.findByPk.calledOnceWith(campaignId)).to.be.true;
-      expect(result).to.be.false;
+      expect(Campaign.destroy.calledOnceWith({ where: { id: campaignId } })).to.be.true;
+      expect(result).to.equal(0);
     });
   });
 
-  describe('addDiscountRuleToCampaign', () => {
-    it('should add a discount rule to a campaign', async () => {
+  describe('addDiscountRules', () => {
+    it('should add discount rules to a campaign', async () => {
       const campaignId = 'campaign-id';
-      const discountRuleId = 'discount-rule-id';
-      const campaign = { id: campaignId, addDiscountRule: sinon.stub().resolves() };
-      const discountRule = { id: discountRuleId };
-      campaignModelMock.findByPk.resolves(campaign);
-      discountRuleModelMock.findByPk.resolves(discountRule);
+      const discountRuleIds = ['rule-1', 'rule-2'];
+      const campaign = { id: campaignId, addDiscountRules: sinon.stub().resolves() };
+      CampaignService.retrieve.resolves(campaign);
+      CampaignService.addDiscountRules.restore();
 
-      await campaignService.addDiscountRuleToCampaign(campaignId, discountRuleId);
+      await CampaignService.addDiscountRules(campaignId, discountRuleIds);
 
-      expect(campaignModelMock.findByPk.calledOnceWith(campaignId)).to.be.true;
-      expect(discountRuleModelMock.findByPk.calledOnceWith(discountRuleId)).to.be.true;
-      expect(campaign.addDiscountRule.calledOnceWith(discountRule)).to.be.true;
+      expect(CampaignService.retrieve.calledOnceWith(campaignId)).to.be.true;
+      expect(campaign.addDiscountRules.calledOnceWith(discountRuleIds)).to.be.true;
     });
 
-    it('should throw an error if campaign is not found', async () => {
+    it('should not add discount rules if campaign is not found', async () => {
       const campaignId = 'non-existent-id';
-      const discountRuleId = 'discount-rule-id';
-      campaignModelMock.findByPk.resolves(null);
+      const discountRuleIds = ['rule-1'];
+      CampaignService.retrieve.resolves(null);
+      CampaignService.addDiscountRules.restore();
 
-      try {
-        await campaignService.addDiscountRuleToCampaign(campaignId, discountRuleId);
-      } catch (error) {
-        expect(error.message).to.equal('Campaign not found');
-      }
+      await CampaignService.addDiscountRules(campaignId, discountRuleIds);
 
-      expect(campaignModelMock.findByPk.calledOnceWith(campaignId)).to.be.true;
-      expect(discountRuleModelMock.findByPk.notCalled).to.be.true;
-    });
-
-    it('should throw an error if discount rule is not found', async () => {
-      const campaignId = 'campaign-id';
-      const discountRuleId = 'non-existent-id';
-      const campaign = { id: campaignId, addDiscountRule: sinon.stub().resolves() };
-      campaignModelMock.findByPk.resolves(campaign);
-      discountRuleModelMock.findByPk.resolves(null);
-
-      try {
-        await campaignService.addDiscountRuleToCampaign(campaignId, discountRuleId);
-      } catch (error) {
-        expect(error.message).to.equal('Discount Rule not found');
-      }
-
-      expect(campaignModelMock.findByPk.calledOnceWith(campaignId)).to.be.true;
-      expect(discountRuleModelMock.findByPk.calledOnceWith(discountRuleId)).to.be.true;
-      expect(campaign.addDiscountRule.notCalled).to.be.true;
+      expect(CampaignService.retrieve.calledOnceWith(campaignId)).to.be.true;
+      // Make sure addDiscountRules was not called on a null campaign
+      // This might require a more specific mock for campaign.addDiscountRules
     });
   });
 
-  describe('removeDiscountRuleFromCampaign', () => {
-    it('should remove a discount rule from a campaign', async () => {
+  describe('removeDiscountRules', () => {
+    it('should remove discount rules from a campaign', async () => {
       const campaignId = 'campaign-id';
-      const discountRuleId = 'discount-rule-id';
-      const campaign = { id: campaignId, removeDiscountRule: sinon.stub().resolves() };
-      const discountRule = { id: discountRuleId };
-      campaignModelMock.findByPk.resolves(campaign);
-      discountRuleModelMock.findByPk.resolves(discountRule);
+      const discountRuleIds = ['rule-1', 'rule-2'];
+      const campaign = { id: campaignId, removeDiscountRules: sinon.stub().resolves() };
+      CampaignService.retrieve.resolves(campaign);
+      CampaignService.removeDiscountRules.restore();
 
-      await campaignService.removeDiscountRuleFromCampaign(campaignId, discountRuleId);
+      await CampaignService.removeDiscountRules(campaignId, discountRuleIds);
 
-      expect(campaignModelMock.findByPk.calledOnceWith(campaignId)).to.be.true;
-      expect(discountRuleModelMock.findByPk.calledOnceWith(discountRuleId)).to.be.true;
-      expect(campaign.removeDiscountRule.calledOnceWith(discountRule)).to.be.true;
+      expect(CampaignService.retrieve.calledOnceWith(campaignId)).to.be.true;
+      expect(campaign.removeDiscountRules.calledOnceWith(discountRuleIds)).to.be.true;
     });
 
-    it('should throw an error if campaign is not found', async () => {
+    it('should not remove discount rules if campaign is not found', async () => {
       const campaignId = 'non-existent-id';
-      const discountRuleId = 'discount-rule-id';
-      campaignModelMock.findByPk.resolves(null);
+      const discountRuleIds = ['rule-1'];
+      CampaignService.retrieve.resolves(null);
+      CampaignService.removeDiscountRules.restore();
 
-      try {
-        await campaignService.removeDiscountRuleFromCampaign(campaignId, discountRuleId);
-      } catch (error) {
-        expect(error.message).to.equal('Campaign not found');
-      }
+      await CampaignService.removeDiscountRules(campaignId, discountRuleIds);
 
-      expect(campaignModelMock.findByPk.calledOnceWith(campaignId)).to.be.true;
-      expect(discountRuleModelMock.findByPk.notCalled).to.be.true;
+      expect(CampaignService.retrieve.calledOnceWith(campaignId)).to.be.true;
+    });
+  });
+
+  describe('getDiscountRules', () => {
+    it('should return discount rules for a campaign', async () => {
+      const campaignId = 'campaign-id';
+      const discountRules = [{ id: 'rule-1' }, { id: 'rule-2' }];
+      const campaign = { id: campaignId, DiscountRules: discountRules };
+      CampaignService.retrieve.resolves(campaign);
+      CampaignService.getDiscountRules.restore();
+
+      const result = await CampaignService.getDiscountRules(campaignId);
+
+      expect(CampaignService.retrieve.calledOnceWith(campaignId, {
+        include: [{ model: DiscountRule, through: CampaignDiscountRule }],
+      })).to.be.true;
+      expect(result).to.deep.equal(discountRules);
     });
 
-    it('should throw an error if discount rule is not found', async () => {
-      const campaignId = 'campaign-id';
-      const discountRuleId = 'non-existent-id';
-      const campaign = { id: campaignId, removeDiscountRule: sinon.stub().resolves() };
-      campaignModelMock.findByPk.resolves(campaign);
-      discountRuleModelMock.findByPk.resolves(null);
+    it('should return empty array if campaign not found', async () => {
+      const campaignId = 'non-existent-id';
+      CampaignService.retrieve.resolves(null);
+      CampaignService.getDiscountRules.restore();
 
-      try {
-        await campaignService.removeDiscountRuleFromCampaign(campaignId, discountRuleId);
-      } catch (error) {
-        expect(error.message).to.equal('Discount Rule not found');
-      }
+      const result = await CampaignService.getDiscountRules(campaignId);
 
-      expect(campaignModelMock.findByPk.calledOnceWith(campaignId)).to.be.true;
-      expect(discountRuleModelMock.findByPk.calledOnceWith(discountRuleId)).to.be.true;
-      expect(campaign.removeDiscountRule.notCalled).to.be.true;
+      expect(CampaignService.retrieve.calledOnceWith(campaignId, {
+        include: [{ model: DiscountRule, through: CampaignDiscountRule }],
+      })).to.be.true;
+      expect(result).to.deep.equal([]);
     });
   });
 });

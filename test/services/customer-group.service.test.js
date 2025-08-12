@@ -1,5 +1,5 @@
-const CustomerGroupService = require('../services/customer-group.service'); // Adjust the path as necessary
-const { CustomerGroup, CustomerGroupCustomer } = require('../models'); // Adjust the path as necessary
+const CustomerGroupService = require('../services/customer-group.service');
+const { CustomerGroup, CustomerGroupCustomer } = require('../models');
 
 // Mock the models
 jest.mock('../models', () => ({
@@ -8,18 +8,22 @@ jest.mock('../models', () => ({
     findByPk: jest.fn(),
     update: jest.fn(),
     destroy: jest.fn(),
+    findAll: jest.fn(), // Added for findAll test
   },
   CustomerGroupCustomer: {
     create: jest.fn(),
     destroy: jest.fn(),
+    findOne: jest.fn(), // Added for addCustomerToGroup test
+  },
+  DiscountRuleCustomerGroup: { // Added for discount rule association tests
+    create: jest.fn(),
+    destroy: jest.fn(),
+    findOne: jest.fn(),
   },
 }));
 
 describe('CustomerGroupService', () => {
-  let customerGroupService;
-
   beforeEach(() => {
-    customerGroupService = new CustomerGroupService();
     // Reset mocks before each test
     jest.clearAllMocks();
   });
@@ -30,7 +34,7 @@ describe('CustomerGroupService', () => {
       const createdGroup = { id: 'group1', ...groupData };
       CustomerGroup.create.mockResolvedValue(createdGroup);
 
-      const result = await customerGroupService.createCustomerGroup(groupData);
+      const result = await CustomerGroupService.createCustomerGroup(groupData);
 
       expect(CustomerGroup.create).toHaveBeenCalledWith(groupData);
       expect(result).toEqual(createdGroup);
@@ -41,20 +45,20 @@ describe('CustomerGroupService', () => {
       const createError = new Error('Failed to create group');
       CustomerGroup.create.mockRejectedValue(createError);
 
-      await expect(customerGroupService.createCustomerGroup(groupData)).rejects.toThrow('Failed to create group');
+      await expect(CustomerGroupService.createCustomerGroup(groupData)).rejects.toThrow('Failed to create group');
       expect(CustomerGroup.create).toHaveBeenCalledWith(groupData);
     });
   });
 
-  describe('findCustomerGroupById', () => {
+  describe('getCustomerGroupById', () => {
     it('should find a customer group by ID successfully', async () => {
       const groupId = 'group1';
       const foundGroup = { id: groupId, name: 'VIP Customers' };
       CustomerGroup.findByPk.mockResolvedValue(foundGroup);
 
-      const result = await customerGroupService.findCustomerGroupById(groupId);
+      const result = await CustomerGroupService.getCustomerGroupById(groupId);
 
-      expect(CustomerGroup.findByPk).toHaveBeenCalledWith(groupId);
+      expect(CustomerGroup.findByPk).toHaveBeenCalledWith(groupId, { include: ['customers'] });
       expect(result).toEqual(foundGroup);
     });
 
@@ -62,10 +66,22 @@ describe('CustomerGroupService', () => {
       const groupId = 'nonexistent-group';
       CustomerGroup.findByPk.mockResolvedValue(null);
 
-      const result = await customerGroupService.findCustomerGroupById(groupId);
+      const result = await CustomerGroupService.getCustomerGroupById(groupId);
 
-      expect(CustomerGroup.findByPk).toHaveBeenCalledWith(groupId);
+      expect(CustomerGroup.findByPk).toHaveBeenCalledWith(groupId, { include: ['customers'] });
       expect(result).toBeNull();
+    });
+  });
+
+  describe('getAllCustomerGroups', () => {
+    it('should return all customer groups successfully', async () => {
+      const foundGroups = [{ id: 'group1', name: 'VIP Customers' }];
+      CustomerGroup.findAll.mockResolvedValue(foundGroups);
+
+      const result = await CustomerGroupService.getAllCustomerGroups();
+
+      expect(CustomerGroup.findAll).toHaveBeenCalledWith({ include: ['customers'] });
+      expect(result).toEqual(foundGroups);
     });
   });
 
@@ -73,76 +89,54 @@ describe('CustomerGroupService', () => {
     it('should update a customer group successfully', async () => {
       const groupId = 'group1';
       const updateData = { name: 'Super VIP Customers' };
-      const existingGroup = { id: groupId, name: 'VIP Customers', update: jest.fn() };
-      CustomerGroup.findByPk.mockResolvedValue(existingGroup);
-      existingGroup.update.mockResolvedValue([1, [existingGroup]]); // Simulate successful update
+      const updatedRows = [1, [{ id: groupId, name: 'Super VIP Customers' }]];
+      CustomerGroup.update.mockResolvedValue(updatedRows);
 
-      const result = await customerGroupService.updateCustomerGroup(groupId, updateData);
+      const result = await CustomerGroupService.updateCustomerGroup(groupId, updateData);
 
-      expect(CustomerGroup.findByPk).toHaveBeenCalledWith(groupId);
-      expect(existingGroup.update).toHaveBeenCalledWith(updateData);
-      expect(result).toEqual(existingGroup);
-    });
-
-    it('should return null if customer group to update is not found', async () => {
-      const groupId = 'nonexistent-group';
-      const updateData = { name: 'Super VIP Customers' };
-      CustomerGroup.findByPk.mockResolvedValue(null);
-
-      const result = await customerGroupService.updateCustomerGroup(groupId, updateData);
-
-      expect(CustomerGroup.findByPk).toHaveBeenCalledWith(groupId);
-      expect(result).toBeNull();
+      expect(CustomerGroup.update).toHaveBeenCalledWith(updateData, { where: { id: groupId }, returning: true });
+      expect(result).toEqual(updatedRows);
     });
 
     it('should throw an error if update fails', async () => {
       const groupId = 'group1';
       const updateData = { name: 'Super VIP Customers' };
-      const existingGroup = { id: groupId, name: 'VIP Customers', update: jest.fn() };
       const updateError = new Error('Failed to update group');
-      CustomerGroup.findByPk.mockResolvedValue(existingGroup);
-      existingGroup.update.mockRejectedValue(updateError);
+      CustomerGroup.update.mockRejectedValue(updateError);
 
-      await expect(customerGroupService.updateCustomerGroup(groupId, updateData)).rejects.toThrow('Failed to update group');
-      expect(CustomerGroup.findByPk).toHaveBeenCalledWith(groupId);
-      expect(existingGroup.update).toHaveBeenCalledWith(updateData);
+      await expect(CustomerGroupService.updateCustomerGroup(groupId, updateData)).rejects.toThrow('Failed to update group');
+      expect(CustomerGroup.update).toHaveBeenCalledWith(updateData, { where: { id: groupId }, returning: true });
     });
   });
 
-  describe('deleteCustomerGroup', () => {
+  describe('removeCustomerGroup', () => {
     it('should delete a customer group successfully', async () => {
       const groupId = 'group1';
-      const existingGroup = { id: groupId, destroy: jest.fn() };
-      CustomerGroup.findByPk.mockResolvedValue(existingGroup);
-      existingGroup.destroy.mockResolvedValue(1); // Simulate successful deletion
+      CustomerGroup.destroy.mockResolvedValue(1);
 
-      const result = await customerGroupService.deleteCustomerGroup(groupId);
+      const result = await CustomerGroupService.removeCustomerGroup(groupId);
 
-      expect(CustomerGroup.findByPk).toHaveBeenCalledWith(groupId);
-      expect(existingGroup.destroy).toHaveBeenCalled();
-      expect(result).toBe(true);
+      expect(CustomerGroup.destroy).toHaveBeenCalledWith({ where: { id: groupId } });
+      expect(result).toBe(1);
     });
 
-    it('should return false if customer group to delete is not found', async () => {
+    it('should return 0 if customer group to delete is not found', async () => {
       const groupId = 'nonexistent-group';
-      CustomerGroup.findByPk.mockResolvedValue(null);
+      CustomerGroup.destroy.mockResolvedValue(0);
 
-      const result = await customerGroupService.deleteCustomerGroup(groupId);
+      const result = await CustomerGroupService.removeCustomerGroup(groupId);
 
-      expect(CustomerGroup.findByPk).toHaveBeenCalledWith(groupId);
-      expect(result).toBe(false);
+      expect(CustomerGroup.destroy).toHaveBeenCalledWith({ where: { id: groupId } });
+      expect(result).toBe(0);
     });
 
     it('should throw an error if deletion fails', async () => {
       const groupId = 'group1';
-      const existingGroup = { id: groupId, destroy: jest.fn() };
       const deleteError = new Error('Failed to delete group');
-      CustomerGroup.findByPk.mockResolvedValue(existingGroup);
-      existingGroup.destroy.mockRejectedValue(deleteError);
+      CustomerGroup.destroy.mockRejectedValue(deleteError);
 
-      await expect(customerGroupService.deleteCustomerGroup(groupId)).rejects.toThrow('Failed to delete group');
-      expect(CustomerGroup.findByPk).toHaveBeenCalledWith(groupId);
-      expect(existingGroup.destroy).toHaveBeenCalled();
+      await expect(CustomerGroupService.removeCustomerGroup(groupId)).rejects.toThrow('Failed to delete group');
+      expect(CustomerGroup.destroy).toHaveBeenCalledWith({ where: { id: groupId } });
     });
   });
 
@@ -151,10 +145,15 @@ describe('CustomerGroupService', () => {
       const groupId = 'group1';
       const customerId = 'customer1';
       const createdEntry = { customer_group_id: groupId, customer_id: customerId };
+
+      CustomerGroupCustomer.findOne.mockResolvedValue(null); // No existing relationship
       CustomerGroupCustomer.create.mockResolvedValue(createdEntry);
 
-      const result = await customerGroupService.addCustomerToGroup(groupId, customerId);
+      const result = await CustomerGroupService.addCustomerToGroup(groupId, customerId);
 
+      expect(CustomerGroupCustomer.findOne).toHaveBeenCalledWith({
+        where: { customer_group_id: groupId, customer_id: customerId },
+      });
       expect(CustomerGroupCustomer.create).toHaveBeenCalledWith({
         customer_group_id: groupId,
         customer_id: customerId,
@@ -162,13 +161,31 @@ describe('CustomerGroupService', () => {
       expect(result).toEqual(createdEntry);
     });
 
+    it('should return existing entry if relationship already exists', async () => {
+      const groupId = 'group1';
+      const customerId = 'customer1';
+      const existingEntry = { customer_group_id: groupId, customer_id: customerId };
+
+      CustomerGroupCustomer.findOne.mockResolvedValue(existingEntry);
+
+      const result = await CustomerGroupService.addCustomerToGroup(groupId, customerId);
+
+      expect(CustomerGroupCustomer.findOne).toHaveBeenCalledWith({
+        where: { customer_group_id: groupId, customer_id: customerId },
+      });
+      expect(CustomerGroupCustomer.create).not.toHaveBeenCalled();
+      expect(result).toEqual(existingEntry);
+    });
+
     it('should throw an error if adding customer to group fails', async () => {
       const groupId = 'group1';
       const customerId = 'customer1';
       const createError = new Error('Failed to add customer to group');
+
+      CustomerGroupCustomer.findOne.mockResolvedValue(null);
       CustomerGroupCustomer.create.mockRejectedValue(createError);
 
-      await expect(customerGroupService.addCustomerToGroup(groupId, customerId)).rejects.toThrow('Failed to add customer to group');
+      await expect(CustomerGroupService.addCustomerToGroup(groupId, customerId)).rejects.toThrow('Failed to add customer to group');
       expect(CustomerGroupCustomer.create).toHaveBeenCalledWith({
         customer_group_id: groupId,
         customer_id: customerId,
@@ -180,9 +197,9 @@ describe('CustomerGroupService', () => {
     it('should remove a customer from a group successfully', async () => {
       const groupId = 'group1';
       const customerId = 'customer1';
-      CustomerGroupCustomer.destroy.mockResolvedValue(1); // Simulate successful deletion
+      CustomerGroupCustomer.destroy.mockResolvedValue(1);
 
-      const result = await customerGroupService.removeCustomerFromGroup(groupId, customerId);
+      const result = await CustomerGroupService.removeCustomerFromGroup(groupId, customerId);
 
       expect(CustomerGroupCustomer.destroy).toHaveBeenCalledWith({
         where: {
@@ -190,15 +207,15 @@ describe('CustomerGroupService', () => {
           customer_id: customerId,
         },
       });
-      expect(result).toBe(true);
+      expect(result).toBe(1);
     });
 
-    it('should return false if customer group customer entry is not found', async () => {
+    it('should return 0 if customer group customer entry is not found', async () => {
       const groupId = 'group1';
       const customerId = 'customer1';
-      CustomerGroupCustomer.destroy.mockResolvedValue(0); // Simulate no deletion
+      CustomerGroupCustomer.destroy.mockResolvedValue(0);
 
-      const result = await customerGroupService.removeCustomerFromGroup(groupId, customerId);
+      const result = await CustomerGroupService.removeCustomerFromGroup(groupId, customerId);
 
       expect(CustomerGroupCustomer.destroy).toHaveBeenCalledWith({
         where: {
@@ -206,7 +223,7 @@ describe('CustomerGroupService', () => {
           customer_id: customerId,
         },
       });
-      expect(result).toBe(false);
+      expect(result).toBe(0);
     });
 
     it('should throw an error if removing customer from group fails', async () => {
@@ -215,12 +232,105 @@ describe('CustomerGroupService', () => {
       const deleteError = new Error('Failed to remove customer from group');
       CustomerGroupCustomer.destroy.mockRejectedValue(deleteError);
 
-      await expect(customerGroupService.removeCustomerFromGroup(groupId, customerId)).rejects.toThrow('Failed to remove customer from group');
+      await expect(CustomerGroupService.removeCustomerFromGroup(groupId, customerId)).rejects.toThrow('Failed to remove customer from group');
       expect(CustomerGroupCustomer.destroy).toHaveBeenCalledWith({
         where: {
           customer_group_id: groupId,
           customer_id: customerId,
         },
+      });
+    });
+  });
+
+  describe('addDiscountRuleToGroup', () => {
+    it('should add a discount rule to a group successfully', async () => {
+      const groupId = 'group1';
+      const discountRuleId = 'rule1';
+      const createdEntry = { customer_group_id: groupId, discount_rule_id: discountRuleId };
+
+      DiscountRuleCustomerGroup.findOne.mockResolvedValue(null);
+      DiscountRuleCustomerGroup.create.mockResolvedValue(createdEntry);
+
+      const result = await CustomerGroupService.addDiscountRuleToGroup(groupId, discountRuleId);
+
+      expect(DiscountRuleCustomerGroup.findOne).toHaveBeenCalledWith({
+        where: { customer_group_id: groupId, discount_rule_id: discountRuleId },
+      });
+      expect(DiscountRuleCustomerGroup.create).toHaveBeenCalledWith({
+        customer_group_id: groupId,
+        discount_rule_id: discountRuleId,
+      });
+      expect(result).toEqual(createdEntry);
+    });
+
+    it('should return existing entry if relationship already exists', async () => {
+      const groupId = 'group1';
+      const discountRuleId = 'rule1';
+      const existingEntry = { customer_group_id: groupId, discount_rule_id: discountRuleId };
+
+      DiscountRuleCustomerGroup.findOne.mockResolvedValue(existingEntry);
+
+      const result = await CustomerGroupService.addDiscountRuleToGroup(groupId, discountRuleId);
+
+      expect(DiscountRuleCustomerGroup.findOne).toHaveBeenCalledWith({
+        where: { customer_group_id: groupId, discount_rule_id: discountRuleId },
+      });
+      expect(DiscountRuleCustomerGroup.create).not.toHaveBeenCalled();
+      expect(result).toEqual(existingEntry);
+    });
+
+    it('should throw an error if adding discount rule to group fails', async () => {
+      const groupId = 'group1';
+      const discountRuleId = 'rule1';
+      const createError = new Error('Failed to add discount rule to group');
+
+      DiscountRuleCustomerGroup.findOne.mockResolvedValue(null);
+      DiscountRuleCustomerGroup.create.mockRejectedValue(createError);
+
+      await expect(CustomerGroupService.addDiscountRuleToGroup(groupId, discountRuleId)).rejects.toThrow('Failed to add discount rule to group');
+      expect(DiscountRuleCustomerGroup.create).toHaveBeenCalledWith({
+        customer_group_id: groupId,
+        discount_rule_id: discountRuleId,
+      });
+    });
+  });
+
+  describe('removeDiscountRuleFromGroup', () => {
+    it('should remove a discount rule from a group successfully', async () => {
+      const groupId = 'group1';
+      const discountRuleId = 'rule1';
+      DiscountRuleCustomerGroup.destroy.mockResolvedValue(1);
+
+      const result = await CustomerGroupService.removeDiscountRuleFromGroup(groupId, discountRuleId);
+
+      expect(DiscountRuleCustomerGroup.destroy).toHaveBeenCalledWith({
+        where: { customer_group_id: groupId, discount_rule_id: discountRuleId },
+      });
+      expect(result).toBe(1);
+    });
+
+    it('should return 0 if discount rule customer group entry is not found', async () => {
+      const groupId = 'group1';
+      const discountRuleId = 'rule1';
+      DiscountRuleCustomerGroup.destroy.mockResolvedValue(0);
+
+      const result = await CustomerGroupService.removeDiscountRuleFromGroup(groupId, discountRuleId);
+
+      expect(DiscountRuleCustomerGroup.destroy).toHaveBeenCalledWith({
+        where: { customer_group_id: groupId, discount_rule_id: discountRuleId },
+      });
+      expect(result).toBe(0);
+    });
+
+    it('should throw an error if removing discount rule from group fails', async () => {
+      const groupId = 'group1';
+      const discountRuleId = 'rule1';
+      const deleteError = new Error('Failed to remove discount rule from group');
+      DiscountRuleCustomerGroup.destroy.mockRejectedValue(deleteError);
+
+      await expect(CustomerGroupService.removeDiscountRuleFromGroup(groupId, discountRuleId)).rejects.toThrow('Failed to remove discount rule from group');
+      expect(DiscountRuleCustomerGroup.destroy).toHaveBeenCalledWith({
+        where: { customer_group_id: groupId, discount_rule_id: discountRuleId },
       });
     });
   });

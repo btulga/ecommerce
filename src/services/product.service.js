@@ -101,5 +101,3 @@ module.exports = {
   updateProduct,
   deleteProduct,
 };
-
-module.exports = new ProductService();
