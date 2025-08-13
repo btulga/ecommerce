@@ -13,8 +13,9 @@ const QpayService = require('../provider/payment/qpay.service'); // Assuming thi
  */
 const paymentProviders = {
   qpay: QpayService,
+}
 
-
+const PaymentService = {
   /**
    * Creates a payment record based on a cart.
    * This is called internally when an order is created from a cart.
@@ -23,7 +24,7 @@ const paymentProviders = {
    * @param {object} transaction - The Sequelize transaction object.
    * @returns {Promise<object>} The created payment record.
    */
-  createPayment: async (cart, order, transaction) => {
+  createPayment: async ({cart, order, transaction, providerId}) => {
     // 1. Calculate the final amount from the cart
     const subtotal = cart.items.reduce((acc, item) => acc + item.quantity * item.unit_price, 0);
     
@@ -44,7 +45,7 @@ const paymentProviders = {
       order_id: order.id,
       amount: Math.round(total), // Store amount in smallest currency unit (e.g., cents)
       currency_code: order.currency_code,
-      provider_id: 'manual', // Default provider, can be updated later
+      provider_id:  providerId, // Default provider, can be updated later
       status: 'awaiting', // Awaiting action from a payment provider
     }, { transaction });
 
@@ -155,10 +156,10 @@ const paymentProviders = {
    * This function is modified to be called with salesChannelId and selectedPaymentProviderId.
    * @param {string} paymentId The ID of the payment record.
    * @param {string} salesChannelId The ID of the sales channel.
-   * @param {string} selectedPaymentProviderId The ID of the payment provider selected by the user/system.
+   * @param {string} paymentProviderId The ID of the payment provider selected by the user/system.
    * @returns {Promise<object>} Data from the payment provider needed to complete the payment (e.g., redirect URL, QR code data).
    */
-  initiateProviderPayment: async (paymentId, salesChannelId, selectedPaymentProviderId) => {
+  initiateProviderPayment: async (paymentId, salesChannelId, paymentProviderId) => {
     const payment = await Payment.findByPk(paymentId);
 
     if (!payment) {
@@ -167,24 +168,24 @@ const paymentProviders = {
 
     // 1. Check if the selected provider is available for this sales channel
     const availableProviders = await PaymentService.getAvailablePaymentProvidersForSalesChannel(salesChannelId);
-    const isProviderAvailable = availableProviders.some(provider => provider.code === selectedPaymentProviderId);
+    const isProviderAvailable = availableProviders.some(provider => provider.code === paymentProviderId);
 
     if (!isProviderAvailable) {
-      throw new Error(`Payment provider "${selectedPaymentProviderId}" is not available for sales channel "${salesChannelId}".`);
+      throw new Error(`Payment provider "${paymentProviderId}" is not available for sales channel "${salesChannelId}".`);
     }
 
     // 2. Get the corresponding payment provider service
-    const providerService = paymentProviders[selectedPaymentProviderId];
+    const providerService = paymentProviders[paymentProviderId];
 
     if (!providerService || typeof providerService.createInvoice !== 'function') { // Assuming a createInvoice method exists on provider services
-      throw new Error(`Invalid or unsupported payment provider service for "${selectedPaymentProviderId}".`);
+      throw new Error(`Invalid or unsupported payment provider service for "${paymentProviderId}".`);
     }
 
     // 3. Call the provider's method to initiate the payment
     // The method name might vary, using createInvoice as an example
     const providerResponse = await providerService.createInvoice(payment.order_id, payment.amount, payment.currency_code);
     // Store provider-specific data if needed
-    payment.data = { ...payment.data, [selectedPaymentProviderId]: providerResponse }; // Store response under provider key
+    payment.data = { ...payment.data, [paymentProviderId]: provPaymentServiceiderResponse }; // Store response under provider key
     await payment.save();
     return providerResponse; // Return data needed for frontend
   },

@@ -81,6 +81,12 @@ The agent must be flexible and capable of adapting to user-driven changes.
     - Models are defined using classes, but other files (controllers, services, routes, etc.) should use a functional programming style and avoid using classes.
 - **Responsiveness to Feedback:**
     - Correct its own mistakes when pointed out.
+    - Function parameters should be passed as an object, for example:
+        ```js 
+        function createUser({ firstName, lastName, email, age, isActive }) { 
+            // TODO some logic 
+        }
+        ```
     - Understand and act on conversational, affirmative commands.
 - **Documentation:**
     - Create and update documentation files like `README.md`.

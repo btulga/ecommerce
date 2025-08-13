@@ -170,7 +170,7 @@ const CartService = {
    * @param {string} cartId The ID of the cart to complete.
    * @returns {Promise<object>} The newly created order object.
    */
-  completeCart: async (cartId) => {
+  completeCart: async ({cartId, paymentProviderId}) => {
     const t = await db.sequelize.transaction();
     try {
       const cart = await CartService.getCart(cartId); // Get full cart with all details
@@ -179,11 +179,20 @@ const CartService = {
         throw new Error("Cart not found.");
       }
       if (!cart.customer_id) {
-          throw new Error("A customer must be associated with the cart to complete an order.");
+        throw new Error("A customer must be associated with the cart to complete an order.");
       }
       if (!cart.items || cart.items.length === 0) {
           throw new Error("Cannot complete an empty cart.");
       }
+
+      // --- Payment Provider Selection and Validation ---
+      const availablePaymentProviders = await PaymentService.getAvailablePaymentProvidersForSalesChannel(cart.sales_channel_id);
+      const isProviderAvailable = availablePaymentProviders.some(provider => provider.code === paymentProviderId);
+
+      if (!isProviderAvailable) {
+        throw new Error(`Payment provider ${paymentProviderId} is not available for this sales channel.`);
+      }
+      
       // TODO: Add more validations here (e.g., shipping address, payment method, inventory check)
 
       // Check if the cart contains any deliverable products
@@ -197,8 +206,8 @@ const CartService = {
           throw new Error("Shipping address is required for this cart.");
       }
 
-      // Call OrderService to create the order and handle fulfillment/payment
-      const order = await OrderService.createOrderFromCart(cart, t);
+      // Call OrderService to create the order and handle fulfillment/payment, passing the selected provider
+      const order = await OrderService.createOrderFromCart({cart, transaction: t, paymentProviderId});
 
       // 4. Mark cart as completed/archived (optional, depending on flow)
       // cart.status = 'completed'; 

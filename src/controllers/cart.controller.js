@@ -73,7 +73,8 @@ const CartController = {
   completeCart: async (req, res) => {
     try {
       const { id } = req.params;
-      const order = await CartService.completeCart(id);
+      const { payment_provider_id } = req.body;
+      const order = await CartService.completeCart({ cartId: id, paymentProviderId: payment_provider_id});
       res.status(201).json(order);
     } catch (error) {
       res.status(400).json({ message: error.message });
