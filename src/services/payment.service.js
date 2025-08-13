@@ -18,42 +18,6 @@ const paymentProviders = {
 
 const PaymentService = {
   /**
-   * Creates a payment record based on an order.
-   * @param {object} order - The order object for which to create a payment.
-   * @param {object} order - The newly created order object.
-   * @param {object} transaction - The Sequelize transaction object.
-   * @returns {Promise<object>} The created payment record.
-   */
-  createPayment: async ({ order, transaction, providerId = null }) => {
-    // 1. Calculate the final amount from the cart
-    // const subtotal = cart.items.reduce((acc, item) => acc + item.quantity * item.unit_price, 0);
-  
-    // let total = subtotal;
-    // // Apply discount if a coupon exists
-    // if (cart.coupon && cart.coupon.rule) {
-    //     const rule = cart.coupon.rule;
-    //     if (rule.type === 'percentage') {
-    //         total -= total * (rule.value / 100);
-    //     } else if (rule.type === 'fixed') {
-    //         total -= rule.value;
-    //     }
-    // }
-    // Add taxes, shipping, etc. (future implementation)
-    
-    // 2. Create the payment record
-    // Associate the payment with the order
-    const payment = await Payment.create({
-      id: 
-      order_id: order.id,
-      amount: order.total, // Use the total calculated on the order
-      currency_code: order.currency_code,
-      provider_id: providerId, // Can be set during creation or updated later
-      status: 'awaiting', // Awaiting action from a payment provider
-    }, { transaction });
-    return payment;
-  },
-
-  /**
    * Retrieves available payment providers for a given sales channel.
    * @param {string} salesChannelId - The ID of the sales channel.
    * @returns {Promise<Array<{ code: string, name: string }>>} Array of available payment providers.
@@ -78,31 +42,6 @@ const PaymentService = {
   },
 
   /**
-   * Initiates a payment session with a provider (e.g., Stripe).
-   * @param {string} cartId 
-   * @returns {Promise<object>} Data from the payment provider (e.g., a client_secret from Stripe).
-   */
-  createPaymentSession: async (cartId) => {
-    // This function might need refactoring depending on how you initiate sessions with specific providers
-    // and how sales channel is determined here.
-    const cart = await Cart.findByPk(cartId); // Assuming cart model is accessible
-    if (!cart) {
-      throw new Error('Cart not found');
-    }
-    // Logic to choose payment provider
-    // In a real app:
-    // return StripeService.createPaymentIntent(cart.total, cart.currency_code);
-    
-    console.log(`Initiating payment session for cart ${cartId}`);
-    return {
-        message: "Payment session initiated. Ready to capture.",
-        cartId: cart.id,
-        // Mocking a provider's session ID
-        provider_session_id: `ps_${new Date().getTime()}` 
-    };
-  },
-
-  /**
    * Marks a payment as captured. Usually called by a webhook from the payment provider.
    * @param {string} orderId The ID of the order.
    * @param {string} providerId The ID of the payment provider (e.g., 'stripe').
@@ -114,7 +53,8 @@ const PaymentService = {
     try {
       const payment = await Payment.findOne({
         where: {
-          order_id: orderId
+          order_id: orderId,
+          status: ['pending', 'paid', 'captured']
         }}, { transaction: t });
       if (!payment) {
         throw new Error(`Payment record not found for order ID: ${orderId}.`);
@@ -159,7 +99,7 @@ const PaymentService = {
    * @param {string} paymentProviderId The ID of the payment provider selected by the user/system.
    * @returns {Promise<object>} Data from the payment provider needed to complete the payment (e.g., redirect URL, QR code data).
    */
-  initiateProviderPayment: async ({ cartId, paymentProviderId }) => {
+  initiatePayment: async ({ cartId, paymentProviderId }) => {
     const t = await sequelize.transaction(); 
     try {
       const cart = await Cart.findByPk(cartId); // Assuming cart model is accessible

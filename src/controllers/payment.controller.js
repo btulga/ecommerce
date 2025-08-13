@@ -52,7 +52,7 @@ const PaymentController = {
       }
 
       // TODO: Fetch the cart object based on cartId
-      const paymentDetails = await PaymentService.initiateProviderPayment({ cartId, paymentProviderId });
+      const paymentDetails = await PaymentService.initiatePayment({ cartId, paymentProviderId });
       res.status(200).json(paymentDetails);
     } catch (error) {
       console.error('Error initiating payment:', error);
