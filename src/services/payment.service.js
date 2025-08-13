@@ -142,7 +142,7 @@ const PaymentService = {
       if (cart && cart.coupon_id) { 
           await db.Coupon.increment('usage_count', { where: { id: cart.coupon_id }, transaction: t });
       }
-
+      await t.commit();
       return payment;
     } catch (error) {
       await t.rollback();
@@ -152,42 +152,90 @@ const PaymentService = {
   },
 
   /**
-   * Initiates a payment with a specific provider for a given payment record.
-   * This function is modified to be called with salesChannelId and selectedPaymentProviderId.
-   * @param {string} paymentId The ID of the payment record.
-   * @param {string} salesChannelId The ID of the sales channel.
+   * Initiates a payment session with a provider using cart details.
+   * @param {object} cart - The cart object for which to initiate the payment.
    * @param {string} paymentProviderId The ID of the payment provider selected by the user/system.
    * @returns {Promise<object>} Data from the payment provider needed to complete the payment (e.g., redirect URL, QR code data).
    */
-  initiateProviderPayment: async ({paymentId, salesChannelId, paymentProviderId}) => {
-    const payment = await Payment.findByPk(paymentId);
+  initiateProviderPayment: async ({ cartId, paymentProviderId }) => {
+    const t = await sequelize.transaction(); 
+    try {
+      const cart = await Cart.findByPk(cartId); // Assuming cart model is accessible
+      if (!cart) {
+        throw new Error('Cart not found');
+      }
 
-    if (!payment) {
-      throw new Error('Payment record not found.');
+      // find order
+      const order = await Order.findOne({
+        where: {
+          cart_id: cartId
+        }
+      });
+      if (!order) {
+        throw new Error('Order not found');
+      }
+      // validate accepted payment is exist
+      const payments = await Payment.findAll({
+        where: {
+          order_id: order.id,
+          status: ['paid', 'captured']
+        }
+      });
+      if (payments.length > 0) {
+        throw new Error('Order already paid, u cant change payment provider');
+      }
+
+      // In a real application, you would determine the sales channel from the cart or user context
+      // For now, we'll assume a default sales channel or fetch it from the cart if available.
+      const salesChannelId = cart.sales_channel_id; // Assuming sales_channel_id is on the cart
+
+      const availableProviders = await PaymentService.getAvailablePaymentProvidersForSalesChannel(salesChannelId);
+      const isProviderAvailable = availableProviders.some(provider => provider.code === paymentProviderId);
+
+      if (!isProviderAvailable) {
+        throw new Error(`Payment provider "${paymentProviderId}" is not available for sales channel "${salesChannelId}".`);
+      }
+      // cancel old payment if exists
+      await Payment.update({
+          status: 'cancelled'
+        },{
+          where: {
+            order_id: order.id,
+            status: 'pending',
+          },
+          transaction: t
+      });
+     
+      // 2. Get the corresponding payment provider service
+      const providerService = paymentProviders[paymentProviderId];
+
+      if (!providerService || typeof providerService.createInvoice !== 'function') { // Assuming a createInvoice method exists on provider services
+        throw new Error(`Invalid or unsupported payment provider service for "${paymentProviderId}".`);
+      }
+
+      // 3. Call the provider's method to initiate the payment
+      // The method name might vary, using createInvoice as an example
+      const providerResponse = await providerService.createInvoice({ orderId: order.id, amount: order.amount }); // Assuming order_id is used by the provider
+      // Store provider-specific data if needed
+      // This might be done later when capturing the payment or associating with a payment record.
+
+       // create new payment
+      await Payment.create({
+        order_id: order.id,
+        amount: order.total, // Use the total calculated on the order
+        currency_code: order.currency_code,
+        provider_id: providerId, // Can be set during creation or updated later
+        status: 'pending', // Awaiting action from a payment provider,
+        data: { [paymentProviderId]: providerResponse }
+      }, { transaction });
+
+      await t.commit();
+      return providerResponse; // Return data needed for frontend
+    } catch (error) {
+      await t.rollback();
+      console.error("Error capturing payment:", error);
+      throw error;
     }
-
-    // 1. Check if the selected provider is available for this sales channel
-    const availableProviders = await PaymentService.getAvailablePaymentProvidersForSalesChannel(salesChannelId);
-    const isProviderAvailable = availableProviders.some(provider => provider.code === paymentProviderId);
-
-    if (!isProviderAvailable) {
-      throw new Error(`Payment provider "${paymentProviderId}" is not available for sales channel "${salesChannelId}".`);
-    }
-
-    // 2. Get the corresponding payment provider service
-    const providerService = paymentProviders[paymentProviderId];
-
-    if (!providerService || typeof providerService.createInvoice !== 'function') { // Assuming a createInvoice method exists on provider services
-      throw new Error(`Invalid or unsupported payment provider service for "${paymentProviderId}".`);
-    }
-
-    // 3. Call the provider's method to initiate the payment
-    // The method name might vary, using createInvoice as an example
-    const providerResponse = await providerService.createInvoice(payment.order_id, payment.amount, payment.currency_code); // Assuming order_id is used by the provider
-    // Store provider-specific data if needed
-    payment.data = { ...payment.data, [paymentProviderId]: providerResponse }; // Store response under provider key
-    await payment.save();
-    return providerResponse; // Return data needed for frontend
   },
 };
 

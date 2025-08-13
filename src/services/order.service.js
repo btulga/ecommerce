@@ -14,7 +14,7 @@ const OrderService = {
     * @param {object} cart The cart object to convert to an order.
    * @returns {Promise<object>} The newly created order object.
    */
-  createOrderFromCart: async ({ cart, paymentProviderId, transaction }) => {
+  createOrderFromCart: async ({ cart, transaction }) => {
     try {
       if (!cart) {
         throw new Error("Cart not found.");
@@ -59,21 +59,21 @@ const OrderService = {
 
       // 3. Create Payment record (Assuming PaymentService handles payment initiation)
       // You might need to pass order details and potentially shipping info to createPayment
-      await PaymentService.createPayment({
+      const payment = await PaymentService.createPayment({
         order, // Pass the order
         transaction,
-        providerId: paymentProviderId,
+        providerId: 'manual',
       });
 
       // 4. Optionally, mark cart as completed/archived after order creation
       // cart.status = 'completed';
       // await cart.save({ transaction: t });
 
-      await t.commit();
-      return order; // Return the newly created order
+      // await t.commit();
+      return { order, payment }; // Return the newly created order
 
     } catch (error) {
-      await t.rollback();
+      // await t.rollback();
       console.error("Error creating order from cart:", error);
       throw error;
     }

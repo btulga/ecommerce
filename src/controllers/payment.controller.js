@@ -38,6 +38,26 @@ const PaymentController = {
       console.error(`Webhook error for provider ${req.params.providerId}:`, error.message);
       res.status(400).send(`Webhook Error: ${error.message}`);
     }
+  },
+
+  /**
+   * Initiates a payment with the selected payment provider.
+   */
+  initiatePayment: async (req, res) => {
+    try {
+      const { cartId, paymentProviderId } = req.body;
+
+      if (!cartId || !paymentProviderId) {
+        return res.status(400).json({ message: 'Missing required parameters: cartId or paymentProviderId' });
+      }
+
+      // TODO: Fetch the cart object based on cartId
+      const paymentDetails = await PaymentService.initiateProviderPayment({ cartId, paymentProviderId });
+      res.status(200).json(paymentDetails);
+    } catch (error) {
+      console.error('Error initiating payment:', error);
+      res.status(500).json({ message: 'Failed to initiate payment', error: error.message });
+    }
   }
 };
 
