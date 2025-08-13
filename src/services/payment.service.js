@@ -7,6 +7,7 @@ const {
   sequelize,
 } = require('../models');
 const QpayService = require('../provider/payment/qpay.service'); // Assuming this path is correct based on project file list
+const { v4: uuidv4 } = require('uuid');
 
 /**
  * Map of supported payment provider services.
@@ -42,6 +43,7 @@ const PaymentService = {
     // 2. Create the payment record
     // Associate the payment with the order
     const payment = await Payment.create({
+      id: 
       order_id: order.id,
       amount: order.total, // Use the total calculated on the order
       currency_code: order.currency_code,
@@ -214,13 +216,15 @@ const PaymentService = {
       }
 
       // 3. Call the provider's method to initiate the payment
+      const paymentId = uuidv4();
+
       // The method name might vary, using createInvoice as an example
-      const providerResponse = await providerService.createInvoice({ orderId: order.id, amount: order.amount }); // Assuming order_id is used by the provider
+      const providerResponse = await providerService.createInvoice({ orderId: order.id, amount: order.amount, paymentId }); // Assuming order_id is used by the provider
       // Store provider-specific data if needed
       // This might be done later when capturing the payment or associating with a payment record.
-
        // create new payment
       await Payment.create({
+        id: paymentId,
         order_id: order.id,
         amount: order.total, // Use the total calculated on the order
         currency_code: order.currency_code,
