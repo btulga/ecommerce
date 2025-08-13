@@ -11,44 +11,43 @@ const QpayService = require('../provider/payment/qpay.service'); // Assuming thi
 /**
  * Map of supported payment provider services.
  */
-const paymentProviders = {
+const paymentProviders = {  
   qpay: QpayService,
 }
 
 const PaymentService = {
   /**
-   * Creates a payment record based on a cart.
-   * This is called internally when an order is created from a cart.
-   * @param {object} cart - The fully loaded cart object.
+   * Creates a payment record based on an order.
+   * @param {object} order - The order object for which to create a payment.
    * @param {object} order - The newly created order object.
    * @param {object} transaction - The Sequelize transaction object.
    * @returns {Promise<object>} The created payment record.
    */
-  createPayment: async ({cart, order, transaction, providerId}) => {
+  createPayment: async ({ order, transaction, providerId = null }) => {
     // 1. Calculate the final amount from the cart
-    const subtotal = cart.items.reduce((acc, item) => acc + item.quantity * item.unit_price, 0);
-    
-    let total = subtotal;
-    // Apply discount if a coupon exists
-    if (cart.coupon && cart.coupon.rule) {
-        const rule = cart.coupon.rule;
-        if (rule.type === 'percentage') {
-            total -= total * (rule.value / 100);
-        } else if (rule.type === 'fixed') {
-            total -= rule.value;
-        }
-    }
+    // const subtotal = cart.items.reduce((acc, item) => acc + item.quantity * item.unit_price, 0);
+  
+    // let total = subtotal;
+    // // Apply discount if a coupon exists
+    // if (cart.coupon && cart.coupon.rule) {
+    //     const rule = cart.coupon.rule;
+    //     if (rule.type === 'percentage') {
+    //         total -= total * (rule.value / 100);
+    //     } else if (rule.type === 'fixed') {
+    //         total -= rule.value;
+    //     }
+    // }
     // Add taxes, shipping, etc. (future implementation)
     
     // 2. Create the payment record
+    // Associate the payment with the order
     const payment = await Payment.create({
       order_id: order.id,
-      amount: Math.round(total), // Store amount in smallest currency unit (e.g., cents)
+      amount: order.total, // Use the total calculated on the order
       currency_code: order.currency_code,
-      provider_id:  providerId, // Default provider, can be updated later
+      provider_id: providerId, // Can be set during creation or updated later
       status: 'awaiting', // Awaiting action from a payment provider
     }, { transaction });
-
     return payment;
   },
 
@@ -138,11 +137,12 @@ const PaymentService = {
       await order.save({ transaction: t });
       
       // Increment coupon usage if one was used
-      if (order.cart_id) { // Assuming order has cart_id
+      // Assuming cart_id is available on the order or can be retrieved
+      const cart = await Cart.findByPk(order.cart_id, { transaction: t }); // Retrieve cart to check for coupon
+      if (cart && cart.coupon_id) { 
           await db.Coupon.increment('usage_count', { where: { id: cart.coupon_id }, transaction: t });
       }
 
-      await t.commit();
       return payment;
     } catch (error) {
       await t.rollback();
@@ -159,7 +159,7 @@ const PaymentService = {
    * @param {string} paymentProviderId The ID of the payment provider selected by the user/system.
    * @returns {Promise<object>} Data from the payment provider needed to complete the payment (e.g., redirect URL, QR code data).
    */
-  initiateProviderPayment: async (paymentId, salesChannelId, paymentProviderId) => {
+  initiateProviderPayment: async ({paymentId, salesChannelId, paymentProviderId}) => {
     const payment = await Payment.findByPk(paymentId);
 
     if (!payment) {
@@ -183,9 +183,9 @@ const PaymentService = {
 
     // 3. Call the provider's method to initiate the payment
     // The method name might vary, using createInvoice as an example
-    const providerResponse = await providerService.createInvoice(payment.order_id, payment.amount, payment.currency_code);
+    const providerResponse = await providerService.createInvoice(payment.order_id, payment.amount, payment.currency_code); // Assuming order_id is used by the provider
     // Store provider-specific data if needed
-    payment.data = { ...payment.data, [paymentProviderId]: provPaymentServiceiderResponse }; // Store response under provider key
+    payment.data = { ...payment.data, [paymentProviderId]: providerResponse }; // Store response under provider key
     await payment.save();
     return providerResponse; // Return data needed for frontend
   },

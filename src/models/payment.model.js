@@ -13,6 +13,10 @@ module.exports = (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    order_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
     currency_code: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -39,6 +43,14 @@ module.exports = (sequelize) => {
     tableName: 'payments',
     timestamps: true,
   });
+
+  Payment.associate = (models) => {
+    // Define the relationship between the Payment and Order models. A Payment belongs to one Order.
+    Payment.belongsTo(models.Order, {
+      foreignKey: 'order_id', // Assuming the foreign key column in the payments table is 'order_id'
+      as: 'order',
+    });
+  };
 
   return Payment;
 };

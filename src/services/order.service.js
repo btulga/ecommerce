@@ -15,7 +15,6 @@ const OrderService = {
    * @returns {Promise<object>} The newly created order object.
    */
   createOrderFromCart: async ({ cart, paymentProviderId, transaction }) => {
-    const t = await db.sequelize.transaction();
     try {
       if (!cart) {
         throw new Error("Cart not found.");
@@ -34,12 +33,13 @@ const OrderService = {
         email: cart.customer ? cart.customer.email : '', // Use customer email if available
         currency_code: 'usd', // Or fetch from a config/region
         tax_rate: 0, // Placeholder
+        order_amount: cart.total, // Assuming cart total is available
         status: 'pending', // Initial status
         payment_status: 'awaiting',
         fulfillment_status: 'not_fulfilled',
         // Conditionally include shipping addresses if deliverable products exist
         shipping_address_id: cart.shipping_address_id ? cart.shipping_address_id : null,
-      }, { transaction: t });
+      }, { transaction });
 
       // 2. Create OrderItems from CartItems
       await Promise.all(cart.items.map(async (cartItem) => {
@@ -54,12 +54,16 @@ const OrderService = {
           activation_code: cartItem.activation_code, // Copy activation code
           activation_status: (cartItem.variant && cartItem.variant.product && cartItem.variant.product.type === 'digital') ? 'pending' : null, // Set initial status for digital products
           // You might add product name, thumbnail etc. from variant/product here
-        }, { transaction: t });
+        }, { transaction });
       }));
 
       // 3. Create Payment record (Assuming PaymentService handles payment initiation)
       // You might need to pass order details and potentially shipping info to createPayment
-      await PaymentService.createPayment({ cart, order, transaction: t, providerId: paymentProviderId });
+      await PaymentService.createPayment({
+        order, // Pass the order
+        transaction,
+        providerId: paymentProviderId,
+      });
 
       // 4. Optionally, mark cart as completed/archived after order creation
       // cart.status = 'completed';

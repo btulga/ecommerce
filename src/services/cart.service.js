@@ -210,8 +210,11 @@ const CartService = {
       const order = await OrderService.createOrderFromCart({cart, transaction: t, paymentProviderId});
 
       // 4. Mark cart as completed/archived (optional, depending on flow)
-      // cart.status = 'completed'; 
-      // await cart.save({ transaction: t });
+      // Mark the cart as completed and associate it with the created order
+      cart.status = 'completed'; 
+      cart.order_id = order.id; // Associate the cart with the new order
+      await cart.save({ transaction: t });
+
 
       await t.commit(); // Commit the transaction managed by completeCart
       return order; // Return the newly created order

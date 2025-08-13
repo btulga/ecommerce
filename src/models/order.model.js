@@ -28,6 +28,12 @@ module.exports = (sequelize, DataTypes) => {
           foreignKey: 'order_id',
           as: 'payment'
       });
+
+      // Order belongs to one Cart
+      Order.belongsTo(models.Cart, {
+          foreignKey: 'cart_id',
+          as: 'cart'
+      });
     }
   }
   Order.init({
@@ -70,6 +76,11 @@ module.exports = (sequelize, DataTypes) => {
     draft: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    cart_id: { // Added foreign key for Cart
+      type: DataTypes.UUID,
+      references: { model: 'carts', key: 'id' },
+      allowNull: true, // Or false, depending on whether an order always comes from a cart
     }
   }, {
     sequelize,
