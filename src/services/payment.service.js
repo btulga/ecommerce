@@ -1,10 +1,19 @@
-const db = require('../models');
-const CartService = require('./cart.service');
-// In a real application, you would have a service for each payment provider
-const QpayService = require('./payment_providers/qpay.service');
-// const StripeService = require('../provider/payment/stripe.service');
+const {
+  Payment,
+  Order,
+  Cart,
+  Coupon,
+  SalesChannelPaymentProvider,
+  sequelize,
+} = require('../models');
+const QpayService = require('../provider/payment/qpay.service'); // Assuming this path is correct based on project file list
 
-const PaymentService = {
+/**
+ * Map of supported payment provider services.
+ */
+const paymentProviders = {
+  qpay: QpayService,
+
 
   /**
    * Creates a payment record based on a cart.
@@ -31,7 +40,7 @@ const PaymentService = {
     // Add taxes, shipping, etc. (future implementation)
     
     // 2. Create the payment record
-    const payment = await db.Payment.create({
+    const payment = await Payment.create({
       order_id: order.id,
       amount: Math.round(total), // Store amount in smallest currency unit (e.g., cents)
       currency_code: order.currency_code,
@@ -43,17 +52,42 @@ const PaymentService = {
   },
 
   /**
+   * Retrieves available payment providers for a given sales channel.
+   * @param {string} salesChannelId - The ID of the sales channel.
+   * @returns {Promise<Array<{ code: string, name: string }>>} Array of available payment providers.
+   */
+  getAvailablePaymentProvidersForSalesChannel: async (salesChannelId) => {
+    const salesChannelLinks = await SalesChannelPaymentProvider.findAll({
+      where: {
+        sales_channel_id: salesChannelId
+      },
+      attributes: ['payment_provider_id'],
+    });
+
+    const providerIds = salesChannelLinks.map(link => link.payment_provider_id);
+
+    // Return information about the available providers based on their IDs
+    return Object.keys(paymentProviders)
+      .filter(providerKey => providerIds.includes(providerKey))
+      .map(providerKey => ({
+        code: providerKey,
+        name: providerKey.toUpperCase(), // Or a more user-friendly name
+      }));
+  },
+
+  /**
    * Initiates a payment session with a provider (e.g., Stripe).
    * @param {string} cartId 
    * @returns {Promise<object>} Data from the payment provider (e.g., a client_secret from Stripe).
    */
   createPaymentSession: async (cartId) => {
-    const cart = await CartService.getCart(cartId);
+    // This function might need refactoring depending on how you initiate sessions with specific providers
+    // and how sales channel is determined here.
+    const cart = await Cart.findByPk(cartId); // Assuming cart model is accessible
     if (!cart) {
       throw new Error('Cart not found');
     }
     // Logic to choose payment provider
-    // For now, we simulate creating a session.
     // In a real app:
     // return StripeService.createPaymentIntent(cart.total, cart.currency_code);
     
@@ -74,11 +108,14 @@ const PaymentService = {
    * @returns {Promise<object>} The updated payment record.
    */
   capturePayment: async (orderId, providerId, providerData) => {
-    const t = await db.sequelize.transaction();
+    const t = await sequelize.transaction();
     try {
-      const payment = await db.Payment.findOne({ where: { order_id: orderId } }, { transaction: t });
+      const payment = await Payment.findOne({
+        where: {
+          order_id: orderId
+        }}, { transaction: t });
       if (!payment) {
-        throw new Error('Payment record not found for this order.');
+        throw new Error(`Payment record not found for order ID: ${orderId}.`);
       }
       if (payment.status === 'captured') {
         // Idempotency: if already captured, just return success.
@@ -92,13 +129,15 @@ const PaymentService = {
       await payment.save({ transaction: t });
 
       // Update order status
-      const order = await db.Order.findByPk(orderId, { transaction: t });
+      const order = await Order.findByPk(orderId, { transaction: t });
+      if (!order) {
+        throw new Error(`Order not found with ID: ${orderId}.`);
+      }
       order.payment_status = 'captured';
       await order.save({ transaction: t });
       
       // Increment coupon usage if one was used
-      const cart = await db.Cart.findByPk(order.cart_id, { transaction: t });
-      if(cart && cart.coupon_id) {
+      if (order.cart_id) { // Assuming order has cart_id
           await db.Coupon.increment('usage_count', { where: { id: cart.coupon_id }, transaction: t });
       }
 
@@ -113,31 +152,41 @@ const PaymentService = {
 
   /**
    * Initiates a payment with a specific provider for a given payment record.
-   * This would typically be called after a payment record is created for an order.
+   * This function is modified to be called with salesChannelId and selectedPaymentProviderId.
    * @param {string} paymentId The ID of the payment record.
-   * @param {string} providerId The ID of the payment provider (e.g., 'qpay', 'stripe').
+   * @param {string} salesChannelId The ID of the sales channel.
+   * @param {string} selectedPaymentProviderId The ID of the payment provider selected by the user/system.
    * @returns {Promise<object>} Data from the payment provider needed to complete the payment (e.g., redirect URL, QR code data).
    */
-  initiateProviderPayment: async (paymentId, providerId) => {
-    const payment = await db.Payment.findByPk(paymentId);
+  initiateProviderPayment: async (paymentId, salesChannelId, selectedPaymentProviderId) => {
+    const payment = await Payment.findByPk(paymentId);
 
     if (!payment) {
       throw new Error('Payment record not found.');
     }
 
-    // Call the appropriate payment provider service based on providerId
-    switch (providerId) {
-      case 'qpay':
-        // Assuming QpayService.createInvoice returns necessary data like invoice_id and payment URL/QR
-        const qpayInvoiceData = await QpayService.createInvoice(payment.order_id, payment.amount, payment.currency_code);
-        // You might want to store the QPay invoice ID in the payment record's data field
-        payment.data = { ...payment.data, qpay_invoice_id: qpayInvoiceData.invoice_id };
-        await payment.save();
-        return qpayInvoiceData; // Return data needed for frontend redirect or QR code
-      // Add cases for other providers here (e.g., 'stripe')
-      default:
-        throw new Error(`Payment provider "${providerId}" is not supported.`);
+    // 1. Check if the selected provider is available for this sales channel
+    const availableProviders = await PaymentService.getAvailablePaymentProvidersForSalesChannel(salesChannelId);
+    const isProviderAvailable = availableProviders.some(provider => provider.code === selectedPaymentProviderId);
+
+    if (!isProviderAvailable) {
+      throw new Error(`Payment provider "${selectedPaymentProviderId}" is not available for sales channel "${salesChannelId}".`);
     }
+
+    // 2. Get the corresponding payment provider service
+    const providerService = paymentProviders[selectedPaymentProviderId];
+
+    if (!providerService || typeof providerService.createInvoice !== 'function') { // Assuming a createInvoice method exists on provider services
+      throw new Error(`Invalid or unsupported payment provider service for "${selectedPaymentProviderId}".`);
+    }
+
+    // 3. Call the provider's method to initiate the payment
+    // The method name might vary, using createInvoice as an example
+    const providerResponse = await providerService.createInvoice(payment.order_id, payment.amount, payment.currency_code);
+    // Store provider-specific data if needed
+    payment.data = { ...payment.data, [selectedPaymentProviderId]: providerResponse }; // Store response under provider key
+    await payment.save();
+    return providerResponse; // Return data needed for frontend
   },
 };
 

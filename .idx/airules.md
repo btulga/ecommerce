@@ -78,6 +78,7 @@ The agent must be flexible and capable of adapting to user-driven changes.
 - **Code Style Flexibility:**
     - Write code in different programming styles (e.g., Class-based vs. Functional).
     - Refactor existing code from one style to another upon request without breaking functionality.
+    - Models are defined using classes, but other files (controllers, services, routes, etc.) should use a functional programming style and avoid using classes.
 - **Responsiveness to Feedback:**
     - Correct its own mistakes when pointed out.
     - Understand and act on conversational, affirmative commands.
