@@ -53,7 +53,6 @@ const CartService = {
     }
   },
 
-  // TODO remove targetPhoneNumber, selectedNumber, ActivationCode
   addOrUpdateItem: async ({cartId, variantId, quantity, metadata = {}}) => {
     try {
       const cart = await CartService.getCart(cartId);
@@ -81,6 +80,11 @@ const CartService = {
       if (cartItem) {
         // Update existing item
         cartItem.metadata = metadata;
+        // Calculate discount for updated quantity
+        const priceDetails = await variant.product.getPriceForCustomer(cart.customer_id);
+        cartItem.unit_price = priceDetails.price; // This might need adjustment based on how getPriceForCustomer returns price
+        cartItem.discount_total = (variant.price - priceDetails.price) * (cartItem.quantity + quantity);
+
         cartItem.quantity += quantity;
 
         await cartItem.save();
@@ -89,17 +93,32 @@ const CartService = {
           cart_id: cartId,
           variant_id: variantId,
           sku: variant.sku,
-          metadata: metadata,
           quantity: quantity,
-          unit_price: variant.price,
-
-          // target_phone_number: isServiceProduct ? targetPhoneNumber : null, // Save phone number for service products
-          // location_id: locationId, // Store the selected location
-          // selected_number: selectedNumber, // Store selected number
-          // activation_code: activationCode, // Store activation code
+          metadata: metadata,
         });
+
+        // Calculate initial discount for the new item. Pass quantity to getPriceForCustomer
+        const priceDetails = await variant.product.getPriceForCustomer(cart.customer_id);
+        cartItem.unit_price = priceDetails.price; // Store the discounted price
+        cartItem.discount_total = (variant.price - priceDetails.price) * quantity;
+
+        await cartItem.save();
       }
-      return await CartService.getCart(cartId);
+
+      // Recalculate cart totals
+      const updatedCart = await CartService.getCart(cartId); // Fetch updated cart with new item
+      updatedCart.subtotal = updatedCart.items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+      updatedCart.discount_total = updatedCart.items.reduce((sum, item) => sum + item.discount_total, 0);
+      // Placeholder for shipping - assumes 0 for now
+      updatedCart.shipping_total = 0;
+      // Placeholder for tax - assumes 0 for now
+      updatedCart.tax_total = 0;
+
+      updatedCart.grand_total = updatedCart.subtotal - updatedCart.discount_total + updatedCart.shipping_total + updatedCart.tax_total;
+      await updatedCart.save();
+
+      return updatedCart;
+
     } catch (error) {
       console.error("Error adding/updating cart item:", error);
       throw new Error("Could not add or update cart item.");
@@ -120,13 +139,23 @@ const CartService = {
       }
 
       await cartItem.destroy();
-      return await CartService.getCart(cartId);
+
+      // Recalculate cart totals after removing item
+      const updatedCart = await CartService.getCart(cartId); // Fetch updated cart
+      updatedCart.subtotal = updatedCart.items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+      updatedCart.discount_total = updatedCart.items.reduce((sum, item) => sum + item.discount_total, 0);
+      updatedCart.shipping_total = 0; // Placeholder
+      updatedCart.tax_total = 0; // Placeholder
+      updatedCart.grand_total = updatedCart.subtotal - updatedCart.discount_total + updatedCart.shipping_total + updatedCart.tax_total;
+      await updatedCart.save();
+
+      return updatedCart;
     } catch (error) {
       console.error("Error removing cart item:", error);
       throw new Error("Could not remove cart item.");
     }
   },
-  
+
   // Applies a coupon to the cart. If a coupon already exists, it will be replaced.
   applyCoupon: async (cartId, couponCode) => {
     try {
@@ -149,6 +178,40 @@ const CartService = {
     } catch (error) {
       console.error("Error applying coupon:", error.message || error);
       throw error;
+    }
+  },
+
+  // Function to recalculate cart totals. Can be called after applying/removing coupons or updating items.
+  recalculateTotals: async (cartId) => {
+    try {
+      const cart = await CartService.getCart(cartId);
+      if (!cart) {
+        throw new Error("Cart not found.");
+      }
+
+      cart.subtotal = cart.items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+      cart.discount_total = cart.items.reduce((sum, item) => sum + item.discount_total, 0);
+      cart.shipping_total = 0; // Placeholder
+      cart.tax_total = 0; // Placeholder
+
+      // TODO: Apply cart-level discounts/coupons to calculate final discount_total
+      // If a coupon is applied to the cart, calculate its effect on the total
+      if (cart.coupon) {
+          // This is where you would apply the coupon's discount rule to the cart totals.
+          // The exact logic depends on your discount rule types (e.g., percentage, fixed amount).
+          // For simplicity, let's assume the item discounts are already reflected in item.discount_total
+          // and the coupon might provide an additional discount.
+          // This part needs to be implemented based on your specific discount rule structure.
+          // For now, we'll just use the item discounts.
+      }
+
+      cart.grand_total = cart.subtotal - cart.discount_total + cart.shipping_total + cart.tax_total;
+      await cart.save();
+      return cart;
+
+    } catch (error) {
+      console.error("Error recalculating cart totals:", error);
+      throw new Error("Could not recalculate cart totals.");
     }
   },
 

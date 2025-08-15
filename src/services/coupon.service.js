@@ -69,7 +69,14 @@ const CouponService = {
       include: [{
         model: db.DiscountRule,
         as: 'rule',
-        include: ['sales_channels', 'products', 'customers']
+        include: [
+          'sales_channels',
+          'products',
+          { 
+            model: db.CustomerGroup, 
+            as: 'customer_groups' 
+          } // Include customer groups
+        ]
       }]
     });
 
@@ -91,6 +98,20 @@ const CouponService = {
       }
       if (!discountRule.customers.some(c => c.id === cart.customer_id)) {
         throw { message: "This coupon is not valid for your account.", code: 'coupon_not_applicable_to_user' };
+      }
+    }
+
+    // Customer Group validation
+    if (discountRule.customer_groups && discountRule.customer_groups.length > 0) {
+      if (!cart.customer_id) {
+        throw { message: "You must be logged in to use this coupon.", code: 'authentication_required' };
+      }
+      // Fetch customer's groups and check if any match the discount rule's allowed groups
+      const customer = await db.Customer.findByPk(cart.customer_id, { include: ['customer_groups'] });
+      const customerGroupIds = new Set(customer.customer_groups.map(group => group.id));
+      const isCustomerInValidGroup = discountRule.customer_groups.some(group => customerGroupIds.has(group.id));
+      if (!isCustomerInValidGroup) {
+        throw { message: "This coupon is not valid for your customer group.", code: 'coupon_not_applicable_to_customer_group' };
       }
     }
 

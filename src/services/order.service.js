@@ -107,6 +107,8 @@ const OrderService = {
         return;
       }
 
+      const customer = await order.getCustomer({ transaction: t }); // Fetch the customer associated with the order
+
       let allItemsFulfilled = true;
 
       await Promise.all(order.items.map(async (orderItem) => {
@@ -115,6 +117,32 @@ const OrderService = {
           console.warn(`Product not found for order item ${orderItem.id}. Cannot fulfill.`);
           allItemsFulfilled = false; // Cannot fulfill if product is missing
           return;
+        }
+
+        // Check if a discount was applied to this item and update discount usage
+        // Assuming discount is calculated and stored on the orderItem or can be inferred
+        // based on original price vs unit price.
+        // You might need to adjust this logic based on how discounts are applied and stored.
+        const originalPrice = orderItem.variant ? orderItem.variant.price : orderItem.unit_price; // Assuming original price is available
+        const discountApplied = originalPrice > orderItem.unit_price;
+
+        if (discountApplied && customer) {
+          try {
+            const [discountUsage, created] = await db.CustomerDiscountUsage.findOrCreate({
+              where: {
+                customer_id: customer.id,
+                product_id: product.id,
+              },
+              defaults: {
+                times_used: 0,
+              },
+              transaction: t,
+            });
+            discountUsage.times_used += 1;
+            await discountUsage.save({ transaction: t });
+          } catch (usageError) {
+            console.error(`Error updating discount usage for customer ${customer.id} and product ${product.id}:`, usageError);
+          }
         }
 
         if (product.type === 'physical') {
