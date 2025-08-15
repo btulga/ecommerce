@@ -16,13 +16,17 @@ module.exports = (sequelize, DataTypes) => {
   OrderItem.init({
     title: DataTypes.STRING,
     description: DataTypes.STRING,
-    thumbnail: DataTypes.STRING,
-    is_return: DataTypes.BOOLEAN,
-    is_giftcard: DataTypes.BOOLEAN,
+    // thumbnail: DataTypes.STRING,
+    // is_return: DataTypes.BOOLEAN,
+    // is_giftcard: DataTypes.BOOLEAN,
+
     quantity: DataTypes.INTEGER,
+    sku: DataTypes.TEXT,
     unit_price: DataTypes.INTEGER,
     order_id: DataTypes.STRING,
     variant_id: DataTypes.STRING,
+    metadata: DataTypes.JSONB,
+
     target_phone_number: DataTypes.STRING,
     selected_number: DataTypes.STRING,
     activation_code: DataTypes.STRING,

@@ -9,7 +9,7 @@ module.exports = (sequelize) => {
           foreignKey: 'couponId', 
           otherKey: 'discountRuleId' 
         }
-      ); 
+      );
     }
   }
 

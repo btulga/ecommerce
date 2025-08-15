@@ -53,8 +53,9 @@ const CartService = {
     }
   },
 
-  addOrUpdateItem: async (cartId, variantId, quantity, locationId = null,
- targetPhoneNumber = null, selectedNumber = null, activationCode = null) => {
+  // TODO remove targetPhoneNumber, selectedNumber, ActivationCode
+  addOrUpdateItem: async ({cartId, variantId, quantity, locationId = null,
+ targetPhoneNumber = null, selectedNumber = null, activationCode = null}) => {
     try {
       const cart = await CartService.getCart(cartId);
       const variant = await db.ProductVariant.findByPk(variantId, {
@@ -146,11 +147,17 @@ const CartService = {
     }
   },
   
+  // Applies a coupon to the cart. If a coupon already exists, it will be replaced.
   applyCoupon: async (cartId, couponCode) => {
     try {
       const cart = await CartService.getCart(cartId);
       if (!cart) {
         throw new Error("Cart not found.");
+      }
+
+      // If a coupon is already applied, remove the association first
+      if (cart.coupon_id) {
+        cart.coupon_id = null;
       }
 
       const validatedCoupon = await CouponService.validateCoupon(couponCode, cart);

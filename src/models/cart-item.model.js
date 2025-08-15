@@ -17,8 +17,10 @@ module.exports = (sequelize, DataTypes) => {
     cart_id: DataTypes.STRING,
     order_id: DataTypes.STRING,
     variant_id: DataTypes.STRING,
+    sku: DataTypes.TEXT,
     quantity: DataTypes.INTEGER,
     unit_price: DataTypes.INTEGER,
+    metadata: DataTypes.JSONB,
     target_phone_number: DataTypes.STRING,
     selected_number: DataTypes.STRING,
     activation_code: DataTypes.STRING

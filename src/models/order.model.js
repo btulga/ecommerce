@@ -72,16 +72,16 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false
     },
-    tax_rate: DataTypes.FLOAT,
     draft: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
-    cart_id: { // Added foreign key for Cart
-      type: DataTypes.UUID,
-      references: { model: 'carts', key: 'id' },
-      allowNull: true, // Or false, depending on whether an order always comes from a cart
-    }
+    cart_id: DataTypes.UUID,
+    // 
+    discount_total: DataTypes.DECIMAL(12,5),
+    shipping_total: DataTypes.DECIMAL(12,5),
+    tax_total: DataTypes.DECIMAL(12,5),
+    total: DataTypes.DECIMAL(12,5), // (subtotal - discount_total + shipping_total + tax_total) stored,
   }, {
     sequelize,
     modelName: 'Order',

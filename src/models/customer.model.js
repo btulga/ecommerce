@@ -11,6 +11,13 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'customer_id',
         as: 'discount_rules'
       });
+
+      // Customer can be associated with many SalesChannels
+      Customer.belongsToMany(models.SalesChannel, {
+        through: 'customer_sales_channels',
+        foreignKey: 'customer_id',
+        as: 'sales_channels'
+      });
       
       // Customer has many Orders
       Customer.hasMany(models.Order, {
