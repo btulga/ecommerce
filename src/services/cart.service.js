@@ -54,36 +54,23 @@ const CartService = {
   },
 
   // TODO remove targetPhoneNumber, selectedNumber, ActivationCode
-  addOrUpdateItem: async ({cartId, variantId, quantity, locationId = null,
- targetPhoneNumber = null, selectedNumber = null, activationCode = null}) => {
+  addOrUpdateItem: async ({cartId, variantId, quantity, metadata = {}}) => {
     try {
       const cart = await CartService.getCart(cartId);
+      if (!cart) {
+        throw new Error("Cart not found.");
+      }
       const variant = await db.ProductVariant.findByPk(variantId, {
         include: [{
           model: db.Product,
           as: 'product'
         }]
       });
-
       if (!variant) {
         throw new Error("Product variant not found.");
       }
 
-      // Check inventory at the specified location if a locationId is provided
-      if (locationId) {
-        const inventory = await db.Inventory.findOne({
-          where: {
-            variant_id: variantId,
-            location_id: locationId,
-          },
-        });
-        if (!inventory || inventory.quantity < quantity) {
-          throw new Error("Not enough inventory at this location.");
-        }
-      }
-
-      const requiresShipping = variant.product && variant.product.is_deliverable;
-
+      //const requiresShipping = variant.product && variant.product.is_deliverable;
       let cartItem = await db.CartItem.findOne({
         where: {
           cart_id: cartId,
@@ -93,17 +80,7 @@ const CartService = {
 
       if (cartItem) {
         // Update existing item
-        if (variant.product && variant.product.type === 'service' && targetPhoneNumber) {
-            cartItem.target_phone_number = targetPhoneNumber;
-        } else if (variant.product && variant.product.type === 'digital' && selectedNumber) {
-            cartItem.selected_number = selectedNumber;
-        }
-         if (activationCode) {
-             cartItem.activation_code = activationCode;
-         }
-        if (locationId) {
-             cartItem.location_id = locationId;
-        }
+        cartItem.metadata = metadata;
         cartItem.quantity += quantity;
 
         await cartItem.save();
@@ -111,12 +88,15 @@ const CartService = {
         cartItem = await db.CartItem.create({
           cart_id: cartId,
           variant_id: variantId,
-          target_phone_number: isServiceProduct ? targetPhoneNumber : null, // Save phone number for service products
-          location_id: locationId, // Store the selected location
-          selected_number: selectedNumber, // Store selected number
-          activation_code: activationCode, // Store activation code
+          sku: variant.sku,
+          metadata: metadata,
           quantity: quantity,
           unit_price: variant.price,
+
+          // target_phone_number: isServiceProduct ? targetPhoneNumber : null, // Save phone number for service products
+          // location_id: locationId, // Store the selected location
+          // selected_number: selectedNumber, // Store selected number
+          // activation_code: activationCode, // Store activation code
         });
       }
       return await CartService.getCart(cartId);
@@ -126,7 +106,7 @@ const CartService = {
     }
   },
   
-  removeItem: async (cartId, itemId) => {
+  removeItem: async ({cartId, itemId}) => {
     try {
       const cartItem = await db.CartItem.findOne({
         where: {

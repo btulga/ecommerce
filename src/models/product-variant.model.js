@@ -27,8 +27,9 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   ProductVariant.init({
+    product_id: DataTypes.UUID,
     title: DataTypes.STRING,
-    sku: DataTypes.STRING,
+    sku: DataTypes.TEXT,
     barcode: DataTypes.STRING,
     ean: DataTypes.STRING,
     upc: DataTypes.STRING,
@@ -39,14 +40,6 @@ module.exports = (sequelize, DataTypes) => {
     origin_country: DataTypes.STRING,
     mid_code: DataTypes.STRING,
     material: DataTypes.STRING,
-    product_id: {
-      type: DataTypes.UUID,
-      references: {
-        model: 'product', // This should be the table name
-        key: 'id',
-      },
-      onDelete: 'CASCADE',
-    },
   }, {
     sequelize,
     modelName: 'ProductVariant',
