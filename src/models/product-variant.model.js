@@ -29,10 +29,14 @@ module.exports = (sequelize, DataTypes) => {
   ProductVariant.init({
     product_id: DataTypes.UUID,
     title: DataTypes.STRING,
+    // Stock Keeping Unit
     sku: DataTypes.TEXT,
     barcode: DataTypes.STRING,
+    // European Article Number used in europe
     ean: DataTypes.STRING,
+    // Universal Product Code used in USA, Canada 
     upc: DataTypes.STRING,
+    //
     inventory_quantity: DataTypes.INTEGER,
     allow_backorder: DataTypes.BOOLEAN,
     manage_inventory: DataTypes.BOOLEAN,

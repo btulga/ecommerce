@@ -14,13 +14,25 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   CartItem.init({
-    cart_id: DataTypes.STRING,
-    order_id: DataTypes.STRING,
-    variant_id: DataTypes.STRING,
+    cart_id: DataTypes.UUID,
+    variant_id: DataTypes.UUID,
+    // variant sku number
     sku: DataTypes.TEXT,
-    quantity: DataTypes.INTEGER,
+    // variant title
+    variant_title: DataTypes.TEXT,
+    
+    // variant price
     unit_price: DataTypes.DECIMAL(12, 5),
-    discount_price: DataTypes.DECIMAL(12, 5),
+    quantity: DataTypes.INTEGER,
+  
+    // discounts
+    discount_type: DataTypes.STRING,
+    discount_amount: DataTypes.DECIMAL(12, 5),
+    discount_rule_id: DataTypes.UUID,
+    discount_applied_at: DataTypes.DATE,
+    
+    // discount_description: DataTypes.TEXT,
+    
     metadata: DataTypes.JSONB,
     target_phone_number: DataTypes.STRING,
     selected_number: DataTypes.STRING,

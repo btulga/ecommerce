@@ -33,11 +33,12 @@ const CartService = {
           }]
         }, {
           model: db.Coupon,
-          as: 'coupon', // Assuming Cart has a foreign key to Coupon
+          as: 'coupons', // Assuming Cart has a foreign key to Coupon
           include: [{
             model: db.DiscountRule,
-            as: 'rule'
-          }]
+            as: 'rules'
+          }],
+          required: false, 
         }, {
           model: db.Customer, // Include customer to get email, etc.
           as: 'customer'
@@ -80,10 +81,9 @@ const CartService = {
       if (cartItem) {
         // Update existing item
         cartItem.metadata = metadata;
-        // Calculate discount for updated quantity
-        const priceDetails = await variant.product.getPriceForCustomer(cart.customer_id);
-        cartItem.unit_price = priceDetails.price; // This might need adjustment based on how getPriceForCustomer returns price
-        cartItem.discount_total = (variant.price - priceDetails.price) * (cartItem.quantity + quantity);
+        cartItem.unit_price = variant.price; // This might need adjustment based on how getPriceForCustomer returns price
+        // TODO 
+        // cartItem.discount_type = (variant.price - priceDetails.price) * (cartItem.quantity + quantity);
 
         cartItem.quantity += quantity;
 

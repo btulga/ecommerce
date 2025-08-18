@@ -7,7 +7,8 @@ module.exports = (sequelize) => {
         { 
           through: models.CouponDiscountRule, 
           foreignKey: 'couponId', 
-          otherKey: 'discountRuleId' 
+          otherKey: 'discountRuleId',
+          as: 'rules'
         }
       );
     }

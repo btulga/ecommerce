@@ -14,18 +14,23 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   OrderItem.init({
+    order_id: DataTypes.UUID,
+    variant_id: DataTypes.UUID,
+    
     title: DataTypes.STRING,
     description: DataTypes.STRING,
     // thumbnail: DataTypes.STRING,
     // is_return: DataTypes.BOOLEAN,
     // is_giftcard: DataTypes.BOOLEAN,
-
-    quantity: DataTypes.INTEGER,
     sku: DataTypes.TEXT,
+    quantity: DataTypes.INTEGER,
     unit_price: DataTypes.DECIMAL(12, 5),
-    discount_price: DataTypes.DECIMAL(12, 5),
-    order_id: DataTypes.STRING,
-    variant_id: DataTypes.STRING,
+    // discounts
+    discount_type: DataTypes.STRING,
+    discount_amount: DataTypes.DECIMAL(12, 5),
+    discount_rule_id: DataTypes.UUID,
+    discount_applied_at: DataTypes.DATE,
+    // metadata
     metadata: DataTypes.JSONB,
 
     target_phone_number: DataTypes.STRING,

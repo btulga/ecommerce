@@ -1,7 +1,15 @@
 const { DataTypes, Model } = require('sequelize');
 
 module.exports = (sequelize) => {
-  class SalesChannel extends Model {}
+  class SalesChannel extends Model {
+    static associate(models) {
+      // Define associations here
+      SalesChannel.hasMany(models.SalesChannelPaymentProvider, {
+        foreignKey: 'sales_channel_id',
+        as: 'payment_providers'
+      });
+    }
+  }
 
   SalesChannel.init({
     id: {

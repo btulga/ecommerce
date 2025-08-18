@@ -35,9 +35,8 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    role: {
-      type: DataTypes.ENUM('member', 'admin'),
-      defaultValue: 'member',
+    roles: {
+      type: DataTypes.JSONB,
     }
     // You can add other fields like phone, etc.
   }, {

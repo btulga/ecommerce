@@ -11,6 +11,11 @@ module.exports = (sequelize, DataTypes) => {
         as: 'variants'
       });
 
+      Product.hasMany(models.ProductOption, {
+        foreignKey: 'product_id',
+        as: 'options'
+      });
+
       // Product belongs to one Collection
       Product.belongsTo(models.ProductCollection, {
         foreignKey: 'collection_id',
@@ -33,7 +38,8 @@ module.exports = (sequelize, DataTypes) => {
       // Product has many Categories through ProductCategory
       Product.belongsToMany(models.Category, {
         through: models.ProductCategory,
-        foreignKey: 'product_id'
+        foreignKey: 'product_id',
+        as: 'categories',
       });
     }
   }
@@ -58,20 +64,12 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM('draft', 'published', 'archived'),
       defaultValue: 'draft'
     },
-    category_id: {
-      type: DataTypes.UUID,
-      references: {
-        model: 'product_categories', // Assuming the table name is 'product_categories'
-        key: 'id',
-      },
-    }, // Added foreign key for product category
     type: DataTypes.STRING, // Added field for product type 'physical', 'digital', 'service'
     price: DataTypes.DECIMAL(10, 2), // Assuming a price field exists
     is_deliverable: { // Added field for quantity limit on discounts
       type: DataTypes.BOOLEAN, // Added field for quantity limit on discounts
       defaultValue: true
     },
-    discount_limit: DataTypes.INTEGER, // New field for quantity limit on discounts
   }, {
     sequelize,
     modelName: 'Product',

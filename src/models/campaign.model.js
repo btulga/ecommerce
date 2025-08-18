@@ -10,8 +10,11 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Campaign.hasMany(models.Promotion, { foreignKey: 'campaignId' });
-      Campaign.belongsToMany(models.DiscountRule, { through: 'CampaignDiscountRule', foreignKey: 'campaignId' });
+      Campaign.belongsToMany(models.DiscountRule, { 
+        through: 'CampaignDiscountRule', 
+        foreignKey: 'campaignId', 
+        as : 'rules' 
+      });
     }
   }
   Campaign.init({
