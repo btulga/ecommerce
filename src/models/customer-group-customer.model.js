@@ -24,31 +24,13 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   CustomerGroupCustomer.init({
-    customer_group_id: {
-      type: DataTypes.UUID,
-      references: {
-        model: 'customer_groups', // This should be the table name for CustomerGroup
-        key: 'id',
-      },
-      onDelete: 'CASCADE',
-      onUpdate: 'CASCADE', // Use ON UPDATE CASCADE for consistency
-      primaryKey: true, // Composite primary key
-    },
-    customer_id: {
-      type: DataTypes.UUID,
-      references: {
-        model: 'customers', // This should be the table name for Customer
-        key: 'id',
-      },
-      onDelete: 'CASCADE',
-      onUpdate: 'CASCADE', // Use ON UPDATE CASCADE for consistency
-      primaryKey: true, // Composite primary key
-    },
+    customer_group_id: DataTypes.UUID,
+    customer_id: DataTypes.UUID,
   }, {
     sequelize,
     modelName: 'CustomerGroupCustomer',
     tableName: 'customer_group_customers',
-    timestamps: false, // Join tables often don't need timestamps
+    timestamps: true, // Join tables often don't need timestamps
   }); // Added semicolon for consistency
   return CustomerGroupCustomer;
 };

@@ -22,22 +22,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   DiscountRuleSalesChannel.init({
-    discount_rule_id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'discount_rules',
-        key: 'id'
-      }
-    },
-    sales_channel_id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'sales_channels',
-        key: 'id'
-      }
-    },
+    discount_rule_id: DataTypes.UUID,
+    sales_channel_id: DataTypes.UUID,
   }, {
     sequelize,
     modelName: 'DiscountRuleSalesChannel',

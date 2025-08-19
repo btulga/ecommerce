@@ -4,19 +4,13 @@ module.exports = (sequelize) => {
   class DiscountRule extends Model {
     static associate(models) {
       // Existing associations will be preserved here
-      
-      // A discount rule can be valid for specific customers
-      DiscountRule.belongsToMany(models.Customer, {
-        through: 'discount_rule_customers',
-        foreignKey: 'discount_rule_id',
-        as: 'customers'
-      });
 
       // We should also add other existing associations here if they exist
       // For example, with Product and SalesChannel
       DiscountRule.belongsToMany(models.Product, {
         through: 'discount_rule_products',
-        foreignKey: 'discount_rule_id'
+        foreignKey: 'discount_rule_id',
+        as: 'products',
       });
 
       DiscountRule.belongsToMany(models.SalesChannel, {
@@ -29,18 +23,6 @@ module.exports = (sequelize) => {
         through: 'discount_rule_customer_group',
         foreignKey: 'discount_rule_id',
         as: 'customer_groups'
-      });
-
-      // A discount rule can belong to many campaigns
-      DiscountRule.belongsToMany(models.Campaign, {
-        through: 'campaign_discount_rules',
-        foreignKey: 'discount_rule_id',
-      });
-
-      // A discount rule can belong to many coupons
-      DiscountRule.belongsToMany(models.Coupon, {
-        through: 'coupon_discount_rules',
-        foreignKey: 'discount_rule_id',
       });
     }
   }

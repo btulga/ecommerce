@@ -20,30 +20,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   DiscountRuleCustomerGroup.init({
-    discount_rule_id: {
-      type: DataTypes.UUID,
-      primaryKey: true,
-      references: {
-        model: 'discount_rules',
-        key: 'id'
-      }
-    },
-    customer_group_id: {
-      type: DataTypes.UUID,
-      primaryKey: true,
-      references: {
-        model: 'customer_groups',
-        key: 'id'
-      }
-    },
-    created_at: {
-      allowNull: false,
-      type: DataTypes.DATE
-    },
-    updated_at: {
-      allowNull: false,
-      type: DataTypes.DATE
-    }
+    discount_rule_id: DataTypes.UUID,
+    customer_group_id: DataTypes.UUID,
   }, {
     sequelize,
     modelName: 'DiscountRuleCustomerGroup',

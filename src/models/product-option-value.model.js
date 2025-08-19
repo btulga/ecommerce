@@ -18,19 +18,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   ProductOptionValue.init({
-    value: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    option_id: {
-      type: DataTypes.UUID,
-      references: {
-        model: 'product_option',
-        key: 'id',
-      },
-      onDelete: 'CASCADE',
-      onUpdate: 'CASCADE',
-    },
+    value: DataTypes.TEXT,
+    option_id: DataTypes.UUID,
   }, {
     sequelize,
     modelName: 'ProductOptionValue',

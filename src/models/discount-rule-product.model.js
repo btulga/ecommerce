@@ -4,24 +4,14 @@ const { Model } = require('sequelize');
 // It's defined to help Sequelize manage the many-to-many relationship
 // between DiscountRule and Product.
 module.exports = (sequelize) => {
-  class DiscountRuleProduct extends Model {}
+  class DiscountRuleProduct extends Model {
+    static associate(models) {
+      // TODO add associate
+    }
+  }
   DiscountRuleProduct.init({
-    discount_rule_id: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      references: {
-        model: 'DiscountRule', // This is the model name, not the table name
-        key: 'id',
-      },
-    },
-    product_id: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      references: {
-        model: 'Product', // This is the model name, not the table name
-        key: 'id',
-      },
-    },
+    discount_rule_id: DataTypes.UUID,
+    product_id: DataTypes.UUID,
   }, {
     sequelize,
     modelName: 'DiscountRuleProduct',

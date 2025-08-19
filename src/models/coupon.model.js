@@ -2,13 +2,11 @@ const { DataTypes, Model } = require('sequelize');
 
 module.exports = (sequelize) => {
   class Coupon extends Model {
-    static associate(models) { 
-      models.Coupon.belongsToMany(models.DiscountRule, 
-        { 
-          through: models.CouponDiscountRule, 
-          foreignKey: 'couponId', 
-          otherKey: 'discountRuleId',
-          as: 'rules'
+    static associate(models) {
+      Coupon.belongsTo(models.DiscountRule,
+        {
+          foreignKey: 'rule_id',
+          as: 'rule'
         }
       );
     }
@@ -47,6 +45,7 @@ module.exports = (sequelize) => {
         type: DataTypes.DATE,
         allowNull: true,
     },
+    rule_id: DataTypes.UUID,
   }, {
     sequelize,
     modelName: 'Coupon',

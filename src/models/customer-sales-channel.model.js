@@ -12,36 +12,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   CustomerSalesChannel.init({
-    customer_id: {
-      type: DataTypes.UUID,
-      references: {
-        model: 'customers', // name of the target model
-        key: 'id', // key in the target model that we're referencing
-      },
-      onUpdate: 'CASCADE',
-      onDelete: 'CASCADE',
-      primaryKey: true,
-    },
-    sales_channel_id: {
-      type: DataTypes.UUID,
-      references: {
-        model: 'sales_channels', // name of the target model
-        key: 'id', // key in the target model that we're referencing
-      },
-      onUpdate: 'CASCADE',
-      onDelete: 'CASCADE',
-      primaryKey: true,
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
+    customer_id: DataTypes.UUID,
+    sales_channel_id: DataTypes.UUID,
   }, {
     sequelize,
     modelName: 'CustomerSalesChannel',

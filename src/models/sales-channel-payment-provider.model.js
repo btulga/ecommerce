@@ -30,16 +30,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING, // Assuming payment provider IDs are strings (e.g., 'qpay', 'stripe')
       allowNull: false,
     },
-    created_at: {
-      allowNull: false,
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    updated_at: {
-      allowNull: false,
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
   }, {
     sequelize,
     modelName: 'SalesChannelPaymentProvider',
