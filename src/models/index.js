@@ -14,6 +14,7 @@ const sequelize = new Sequelize(
     config.password,
     {
         ...config,
+        define: { underscored: true, timestamps: true },
         pool: {
             max: 20,
             min: 20,

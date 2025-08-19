@@ -1,8 +1,8 @@
-const Category = require('../models/category.model');
-const ProductCategory = require('../models/product-category.model');
+const Category = require('../models/product/category.model');
+const ProductCategory = require('../models/product/product-category.model');
 
 const createCategory = async (categoryData) => {
-  const category = new Category(categoryData);  
+  const category = new Category(categoryData);
   await category.save();
   return category;
 };

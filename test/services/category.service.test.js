@@ -7,11 +7,11 @@ const {
   addProductToCategory,
   removeProductFromCategory,
 } = require('../../src/services/category.service');
-const Category = require('../../src/models/category.model');
-const ProductCategory = require('../../src/models/product-category.model');
+const Category = require('../../src/models/product/category.model');
+const ProductCategory = require('../../src/models/product/product-category.model');
 
-jest.mock('../../src/models/category.model');
-jest.mock('../../src/models/product-category.model');
+jest.mock('../../src/models/product/category.model');
+jest.mock('../../src/models/product/product-category.model');
 
 describe('Category Service Tests', () => {
   afterEach(() => {
