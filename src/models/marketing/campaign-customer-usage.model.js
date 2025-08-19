@@ -8,9 +8,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   CampaignCustomerUsage.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    campaign_id: { type: DataTypes.UUID, allowNull: false },
-    customer_id: { type: DataTypes.UUID, allowNull: false },
+    campaign_id: { type: DataTypes.UUID, primaryKey: true },
+    customer_id: { type: DataTypes.UUID, primaryKey: true },
     times_used: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
   }, {
     sequelize,

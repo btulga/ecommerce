@@ -3,9 +3,8 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class ProductCollection extends Model {}
   ProductCollection.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    title: DataTypes.STRING,
-    handle: DataTypes.STRING
+    collection_id: { type: DataTypes.UUID, primaryKey: true },
+    product_id: { type: DataTypes.UUID, primaryKey: true },
   }, {
     sequelize,
     modelName: 'ProductCollection',

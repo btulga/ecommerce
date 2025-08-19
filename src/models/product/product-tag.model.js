@@ -3,8 +3,8 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class ProductTag extends Model {}
   ProductTag.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    value: DataTypes.TEXT
+    product_id: { type: DataTypes.UUID, primaryKey: true },
+    tag_id: { type: DataTypes.UUID, primaryKey: true },
   }, {
     sequelize,
     modelName: 'ProductTag',

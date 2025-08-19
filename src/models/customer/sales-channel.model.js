@@ -3,8 +3,16 @@ const { DataTypes, Model } = require('sequelize');
 module.exports = (sequelize) => {
   class SalesChannel extends Model {
     static associate(models) {
-      SalesChannel.hasMany(models.SalesChannelPaymentProvider, { foreignKey: 'sales_channel_id', as: 'payment_providers' });
-      SalesChannel.belongsToMany(models.Customer, { through: 'customer_sales_channels', foreignKey: 'sales_channel_id', otherKey: 'customer_id', as: 'customers' });
+      SalesChannel.hasMany(models.SalesChannelPaymentProvider, { 
+        foreignKey: 'sales_channel_id', 
+        as: 'payment_providers' 
+      });
+      SalesChannel.belongsToMany(models.Customer, { 
+        through: 'customer_sales_channels', 
+        foreignKey: 'sales_channel_id', 
+        otherKey: 'customer_id', 
+        as: 'customers' 
+      });
     }
   }
   SalesChannel.init({

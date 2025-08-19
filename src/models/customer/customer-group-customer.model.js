@@ -8,9 +8,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   CustomerGroupCustomer.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    customer_group_id: { type: DataTypes.UUID, allowNull: false },
-    customer_id: { type: DataTypes.UUID, allowNull: false },
+    customer_group_id: { type: DataTypes.UUID, allowNull: false, primaryKey: true },
+    customer_id: { type: DataTypes.UUID, allowNull: false, primaryKey: true },
   }, {
     sequelize,
     modelName: 'CustomerGroupCustomer',

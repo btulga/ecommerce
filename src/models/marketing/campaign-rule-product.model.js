@@ -12,9 +12,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   CampaignRuleProduct.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    campaign_id: DataTypes.UUID,
-    product_id: DataTypes.UUID,
+    campaign_id: { type: DataTypes.UUID, primaryKey: true },
+    product_id: { type: DataTypes.UUID, primaryKey: true },
   }, {
     sequelize,
     modelName: 'CampaignRuleProduct',

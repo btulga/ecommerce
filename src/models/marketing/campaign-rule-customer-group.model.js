@@ -12,9 +12,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   CampaignRuleCustomerGroup.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    campaign_id: DataTypes.UUID,
-    customer_group_id: DataTypes.UUID,
+    campaign_id: { type: DataTypes.UUID, primaryKey: true },
+    customer_group_id: { type: DataTypes.UUID, primaryKey: true },
   }, {
     sequelize,
     modelName: 'CampaignRuleCustomerGroup',

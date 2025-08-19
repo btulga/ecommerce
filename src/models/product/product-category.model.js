@@ -3,9 +3,8 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class ProductCategory extends Model {}
   ProductCategory.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    product_id: DataTypes.UUID,
-    category_id: DataTypes.UUID,
+    product_id: { type: DataTypes.UUID, primaryKey: true },
+    category_id: { type: DataTypes.UUID, primaryKey: true },
   }, {
     sequelize,
     modelName: 'ProductCategory',
