@@ -1,7 +1,12 @@
 'use strict';
 const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class OrderItem extends Model {}
+  class OrderItem extends Model {
+    static associate(models) {
+      OrderItem.belongsTo(models.Order, { foreignKey: 'order_id', as: 'order' });
+      OrderItem.belongsTo(models.ProductVariant, { foreignKey: 'variant_id', as: 'variant' });
+    }
+  }
   OrderItem.init({
     id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     order_id: DataTypes.STRING,

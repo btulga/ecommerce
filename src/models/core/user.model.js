@@ -11,7 +11,7 @@ module.exports = (sequelize) => {
     first_name: DataTypes.STRING,
     last_name: DataTypes.STRING,
     password_hash: { type: DataTypes.STRING, allowNull: false },
-    roles: { type: DataTypes.JSONB },
+    roles: { type: DataTypes.JSONB }, // etc, roles: ['ADMIN', 'SOME_ROLE']
   }, {
     sequelize,
     modelName: 'User',

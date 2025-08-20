@@ -1,7 +1,7 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class CartCoupon extends Model {
+  class CartPromotion extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -9,25 +9,30 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      CartCoupon.belongsTo(models.Cart, {
+      CartPromotion.belongsTo(models.Cart, {
         foreignKey: 'cart_id',
         allowNull: false,
       });
-      CartCoupon.belongsTo(models.Coupon, {
+      CartPromotion.belongsTo(models.Promotion, {
+        foreignKey: 'promotion_id',
+        allowNull: false,
+      });
+      CartPromotion.belongsTo(models.Coupon, {
         foreignKey: 'coupon_id',
         allowNull: false,
       });
     }
   }
-  CartCoupon.init({
+  CartPromotion.init({
     id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     cart_id: { type: DataTypes.STRING },
+    promotion_id: { type: DataTypes.STRING },
     coupon_id: { type: DataTypes.STRING },
-    applied_at: { type: DataTypes.DATE },
+    discount_amount: { type: DataTypes.DECIMAL(12, 5) },
   }, {
     sequelize,
-    modelName: 'CartCoupon',
-    tableName: 'cart_coupon',
+    modelName: 'CartPromotion',
+    tableName: 'cart_promotion',
   });
-  return CartCoupon;
+  return CartPromotion;
 };
