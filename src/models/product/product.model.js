@@ -40,10 +40,10 @@ module.exports = (sequelize, DataTypes) => {
     title: DataTypes.STRING,
     description: DataTypes.TEXT,
     handle: DataTypes.TEXT,
+    product_type: DataTypes.STRING, // physical, digital, service
     thumbnail: DataTypes.STRING,
     price: DataTypes.DECIMAL(12, 5),
     currency_code: DataTypes.STRING,
-    is_giftcard: { type: DataTypes.BOOLEAN, defaultValue: false },
     status: { type: DataTypes.STRING, defaultValue: 'draft' },
     metadata: { type: DataTypes.JSONB }
   }, {

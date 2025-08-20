@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
     id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     variant_id: { type: DataTypes.STRING, allowNull: false },
     location_id: { type: DataTypes.STRING, allowNull: false },
-    quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }, // үлдэгдэл
+    reserved: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }, // cart-д байгаа (reserve хийсэн)
   }, {
     sequelize,
     modelName: 'Inventory',

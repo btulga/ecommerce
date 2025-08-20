@@ -10,9 +10,10 @@ module.exports = (sequelize, DataTypes) => {
     Shipment.init({
         id: {type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true},
         order_id: {type: DataTypes.STRING},
+        location_id: {type: DataTypes.STRING}, // shipment-ийг аль агуулахаас гаргаж буйг заана
         shipment_address_id: {type: DataTypes.STRING},
         shipment_price: { type: DataTypes.DECIMAL(12, 5) },
-        status: {type: DataTypes.STRING, defaultValue: 'pending'}, // pending, shipped, delivered
+        status: {type: DataTypes.STRING, defaultValue: 'pending'}, // pending, shipped, ready_for_pickup, delivered
         carrier: {type: DataTypes.STRING},
         tracking_number: {type: DataTypes.TEXT},
         shipped_at: {type: DataTypes.DATE},

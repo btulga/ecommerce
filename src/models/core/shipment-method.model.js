@@ -8,7 +8,8 @@ module.exports = (sequelize, DataTypes) => {
 
     ShipmentMethod.init({
         id: {type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true},
-        name: { type: DataTypes.TEXT },
+        name: { type: DataTypes.TEXT },  // "Pickup at Store", "Home Delivery"
+        code: { type: DataTypes.STRING }, // "pickup", "delivery"
         description: { type: DataTypes.TEXT },
         is_active: {type: DataTypes.BOOLEAN},
     }, {

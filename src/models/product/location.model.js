@@ -4,8 +4,9 @@ module.exports = (sequelize, DataTypes) => {
   class Location extends Model {}
   Location.init({
     id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    name: DataTypes.STRING,
-    address: DataTypes.STRING
+    name: DataTypes.TEXT,
+    location_type: DataTypes.STRING, // warehouse, store, pickup_point
+    address: DataTypes.TEXT
   }, {
     sequelize,
     modelName: 'Location',
