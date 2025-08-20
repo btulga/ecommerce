@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
         id: {type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true},
         order_id: {type: DataTypes.STRING},
         shipment_address_id: {type: DataTypes.STRING},
+        shipment_price: { type: DataTypes.DECIMAL(12, 5) },
         status: {type: DataTypes.STRING, defaultValue: 'pending'}, // pending, shipped, delivered
         carrier: {type: DataTypes.STRING},
         tracking_number: {type: DataTypes.TEXT},
