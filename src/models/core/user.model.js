@@ -6,7 +6,7 @@ module.exports = (sequelize) => {
     validPassword(password) { return bcrypt.compareSync(password, this.password_hash); }
   }
   User.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     email: { type: DataTypes.STRING, allowNull: false, unique: true, validate: { isEmail: true } },
     first_name: DataTypes.STRING,
     last_name: DataTypes.STRING,
@@ -15,7 +15,7 @@ module.exports = (sequelize) => {
   }, {
     sequelize,
     modelName: 'User',
-    tableName: 'users',
+    tableName: 'user',
     timestamps: true,
     underscored: true,
     hooks: {

@@ -12,13 +12,13 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   CustomerGroup.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     name: { type: DataTypes.STRING, allowNull: false },
     description: { type: DataTypes.TEXT },
   }, {
     sequelize,
     modelName: 'CustomerGroup',
-    tableName: 'customer_groups',
+    tableName: 'customer_group',
     timestamps: true,
     underscored: true,
   });

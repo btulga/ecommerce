@@ -3,9 +3,9 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class ProductVariant extends Model {
     static associate(models) {
-      this.belongsTo(models.Product, { 
-        foreignKey: 'product_id', 
-        as: 'product' 
+      this.belongsTo(models.Product, {
+        foreignKey: 'product_id',
+        as: 'product'
       });
       this.belongsToMany(models.ProductOptionValue, {
         through: 'product_variant_option_values',
@@ -13,15 +13,15 @@ module.exports = (sequelize, DataTypes) => {
         otherKey: 'product_option_value_id',
         as: 'option_values',
       });
-      this.hasMany(models.Inventory, { 
-        foreignKey: 'variant_id', 
-        as: 'inventory' 
+      this.hasMany(models.Inventory, {
+        foreignKey: 'variant_id',
+        as: 'inventory'
       });
     }
   }
   ProductVariant.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    product_id: { type: DataTypes.UUID, allowNull: false },
+    id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    product_id: { type: DataTypes.STRING, allowNull: false },
     title: DataTypes.TEXT,
     // The SKU of the product variant.
     sku: DataTypes.TEXT,
@@ -37,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
     manage_inventory: DataTypes.BOOLEAN,
     // Whether the product variant's requires shipping.
     requires_shipping: DataTypes.BOOLEAN,
-    // sortable 
+    // sortable
     variant_rank: DataTypes.DOUBLE,
     // dimesion and weight
     weight: DataTypes.DOUBLE,
@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'ProductVariant',
-    tableName: 'product_variants',
+    tableName: 'product_variant',
     timestamps: true,
     underscored: true,
   });

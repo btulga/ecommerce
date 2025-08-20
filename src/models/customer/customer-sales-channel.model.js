@@ -7,12 +7,12 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   CustomerSalesChannel.init({
-    customer_id: { type: DataTypes.UUID, primaryKey: true },
-    sales_channel_id: { type: DataTypes.UUID, primaryKey: true },
+    customer_id: { type: DataTypes.STRING, primaryKey: true },
+    sales_channel_id: { type: DataTypes.STRING, primaryKey: true },
   }, {
     sequelize,
     modelName: 'CustomerSalesChannel',
-    tableName: 'customer_sales_channels',
+    tableName: 'customer_sales_channel',
     underscored: true,
     timestamps: true,
   });

@@ -20,13 +20,13 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Category.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     name: DataTypes.STRING,
     description: DataTypes.TEXT,
     // URL slug
     handle: DataTypes.TEXT,
     // parent id
-    parent_id: DataTypes.UUID,
+    parent_id: DataTypes.STRING,
     // order id
     rank: DataTypes.NUMBER,
     // product category is active.
@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Category',
-    tableName: 'categories',
+    tableName: 'category',
     timestamps: true,
     underscored: true,
   });

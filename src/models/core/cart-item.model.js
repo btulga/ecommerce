@@ -3,9 +3,9 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class CartItem extends Model {}
   CartItem.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    cart_id: DataTypes.UUID,
-    variant_id: DataTypes.UUID,
+    id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    cart_id: DataTypes.STRING,
+    variant_id: DataTypes.STRING,
     sku: DataTypes.TEXT,
     variant_title: DataTypes.TEXT,
     unit_price: DataTypes.DECIMAL(12, 5),
@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'CartItem',
-    tableName: 'cart_items',
+    tableName: 'cart_item',
     timestamps: true,
     underscored: true,
   });

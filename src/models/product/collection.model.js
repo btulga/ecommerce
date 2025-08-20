@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Collection.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     title: DataTypes.STRING,
     // URL slug
     handle: DataTypes.TEXT,
@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Collection',
-    tableName: 'collections',
+    tableName: 'collection',
     timestamps: true,
     underscored: true,
   });

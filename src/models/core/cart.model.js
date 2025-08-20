@@ -8,15 +8,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Cart.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    customer_id: { type: DataTypes.UUID, allowNull: true },
-    region_id: { type: DataTypes.UUID, allowNull: true },
+    id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    customer_id: { type: DataTypes.STRING, allowNull: true },
+    sales_channel_id: { type: DataTypes.STRING, allowNull: true },
     currency_code: DataTypes.STRING,
     completed_at: DataTypes.DATE,
   }, {
     sequelize,
     modelName: 'Cart',
-    tableName: 'carts',
+    tableName: 'cart',
     timestamps: true,
     underscored: true,
   });

@@ -8,12 +8,12 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   ProductVariantOptionValue.init({
-    product_variant_id: { type: DataTypes.UUID, primaryKey: true },
-    product_option_value_id: { type: DataTypes.UUID, primaryKey: true },
+    product_variant_id: { type: DataTypes.STRING, primaryKey: true },
+    product_option_value_id: { type: DataTypes.STRING, primaryKey: true },
   }, {
     sequelize,
     modelName: 'ProductVariantOptionValue',
-    tableName: 'product_variant_option_values',
+    tableName: 'product_variant_option_value',
     timestamps: true,
     underscored: true,
     indexes: [{ unique: true, fields: ['product_variant_id', 'product_option_value_id'] }]

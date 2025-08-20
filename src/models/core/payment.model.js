@@ -7,9 +7,9 @@ module.exports = (sequelize) => {
         }
     }
     Payment.init({
-        id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+        id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
         amount: { type: DataTypes.DECIMAL(12,5), allowNull: false },
-        order_id: { type: DataTypes.UUID, allowNull: false },
+        order_id: { type: DataTypes.STRING, allowNull: false },
         currency_code: { type: DataTypes.STRING, allowNull: false },
         provider_id: { type: DataTypes.STRING, allowNull: false },
         data: { type: DataTypes.JSONB, allowNull: true },
@@ -17,7 +17,7 @@ module.exports = (sequelize) => {
     }, {
         sequelize,
         modelName: 'Payment',
-        tableName: 'payments',
+        tableName: 'payment',
         timestamps: true,
         underscored: true,
     });

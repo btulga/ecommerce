@@ -10,15 +10,15 @@ module.exports = (sequelize, DataTypes) => {
         }
     }
     Order.init({
-        id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+        id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
         status: { type: DataTypes.ENUM('not_paid','awaiting','authorized','partially_paid','paid','refunded','cancelled'), defaultValue: 'not_paid' },
         display_id: { type: DataTypes.INTEGER, autoIncrement: true },
-        customer_id: { type: DataTypes.UUID, allowNull: false },
+        customer_id: { type: DataTypes.STRING, allowNull: false },
         email: { type: DataTypes.STRING, allowNull: false, validate: { isEmail: true } },
-        shipping_address_id: { type: DataTypes.UUID },
+        shipping_address_id: { type: DataTypes.STRING },
         currency_code: { type: DataTypes.STRING, allowNull: false },
         draft: { type: DataTypes.BOOLEAN, defaultValue: false },
-        cart_id: { type: DataTypes.UUID },
+        cart_id: { type: DataTypes.STRING },
         discount_total: DataTypes.DECIMAL(12,5),
         shipping_total: DataTypes.DECIMAL(12,5),
         tax_total: DataTypes.DECIMAL(12,5),
@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         sequelize,
         modelName: 'Order',
-        tableName: 'orders',
+        tableName: 'order',
         timestamps: true,
         underscored: true,
     });

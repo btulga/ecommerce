@@ -8,13 +8,13 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   ProductOption.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     title: { type: DataTypes.STRING, allowNull: false },
-    product_id: { type: DataTypes.UUID, allowNull: false },
+    product_id: { type: DataTypes.STRING, allowNull: false },
   }, {
     sequelize,
     modelName: 'ProductOption',
-    tableName: 'product_options',
+    tableName: 'product_option',
     timestamps: true,
     underscored: true,
   });

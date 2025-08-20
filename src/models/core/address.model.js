@@ -17,12 +17,12 @@ module.exports = (sequelize) => {
 
   Address.init({
     id: {
-      type: DataTypes.UUID,
+      type: DataTypes.STRING,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
       allowNull: false,
     },
-    customer_id: { type: DataTypes.UUID, allowNull: true },
+    customer_id: { type: DataTypes.STRING, allowNull: true },
     first_name: DataTypes.STRING,
     last_name: DataTypes.STRING,
     address_1: DataTypes.TEXT,
@@ -36,7 +36,7 @@ module.exports = (sequelize) => {
   }, {
     sequelize,
     modelName: 'Address',
-    tableName: 'addresses',
+    tableName: 'address',
     timestamps: true,
     underscored: true,
   });

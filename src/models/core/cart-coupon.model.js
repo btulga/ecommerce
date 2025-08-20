@@ -21,12 +21,12 @@ module.exports = (sequelize, DataTypes) => {
   }
   CartCoupon.init({
     id: {
-      type: DataTypes.UUID,
+      type: DataTypes.STRING,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     cartId: {
-      type: DataTypes.UUID,
+      type: DataTypes.STRING,
       allowNull: false,
       references: {
         model: 'carts',
@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     couponId: {
-      type: DataTypes.UUID,
+      type: DataTypes.STRING,
       allowNull: false,
       references: {
         model: 'coupons',
@@ -44,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'CartCoupon',
-    tableName: 'cart_coupons',
+    tableName: 'cart_coupon',
   });
   return CartCoupon;
 };

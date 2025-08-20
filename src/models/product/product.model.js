@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Product.init({
-    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     title: DataTypes.STRING,
     description: DataTypes.TEXT,
     handle: DataTypes.TEXT,
@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Product',
-    tableName: 'products',
+    tableName: 'product',
     timestamps: true,
     underscored: true,
   });
