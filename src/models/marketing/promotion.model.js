@@ -97,8 +97,6 @@ module.exports = (sequelize, DataTypes) => {
     campaign_id: DataTypes.STRING,
     name: DataTypes.TEXT,
     description: DataTypes.TEXT,
-    // discount type
-    promotion_type: { type: DataTypes.STRING, allowNull: false }, // 'discount','coupon','gift','free_shipping','bundle'
     // date time
     start_date: DataTypes.DATE,
     end_date: { type: DataTypes.DATE, allowNull: true }, // null value means no end date

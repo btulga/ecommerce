@@ -93,8 +93,11 @@ module.exports = (sequelize, DataTypes) => {
   }
   Coupon.init({
     id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    promotion_id: DataTypes.STRING,
     code: { type: DataTypes.STRING, unique: true, allowNull: false },
+    // // discount type
+    // discount_type: { type: DataTypes.STRING, allowNull: false }, // 'percentage','fixed'
+    // // discount value
+    // value: DataTypes.DECIMAL(12, 5),
     // date time
     start_date: DataTypes.DATE,
     end_date: { type: DataTypes.DATE, allowNull: true }, // null value means no end date
