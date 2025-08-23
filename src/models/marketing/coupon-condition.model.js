@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     coupon_id: DataTypes.STRING,
     condition_type: DataTypes.STRING, // "min_order_amount", "customer_group", "product_category"
     condition_value: DataTypes.STRING,
+    operator: DataTypes.STRING, //
     // other metadata
     metadata: DataTypes.JSONB,
   }, {

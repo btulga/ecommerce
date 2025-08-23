@@ -15,7 +15,8 @@ module.exports = (sequelize, DataTypes) => {
           model: 'promotion_condition',
           unique: false,
           scope: {
-            condition_type: 'product'
+            condition_type: 'product',
+            operator: '='
           }
         },
         foreignKey: 'condition_value',
@@ -29,6 +30,7 @@ module.exports = (sequelize, DataTypes) => {
           unique: false,
           scope: {
             condition_type: 'sales_channel',
+            operator: '='
           }
         },
         foreignKey: 'condition_value',
@@ -42,6 +44,7 @@ module.exports = (sequelize, DataTypes) => {
           unique: false,
           scope: {
             condition_type: 'customer_group',
+            operator: '='
           }
         },
         foreignKey: 'condition_value',
@@ -56,6 +59,7 @@ module.exports = (sequelize, DataTypes) => {
           unique: false,
           scope: {
             condition_type: 'customer',
+            operator: '='
           }
         },
         foreignKey: 'condition_value',
@@ -70,6 +74,7 @@ module.exports = (sequelize, DataTypes) => {
           unique: false,
           scope: {
             condition_type: 'category',
+            operator: '='
           }
         },
         foreignKey: 'condition_value',
@@ -84,6 +89,7 @@ module.exports = (sequelize, DataTypes) => {
           unique: false,
           scope: {
             condition_type: 'collection',
+            operator: '='
           }
         },
         foreignKey: 'condition_value',

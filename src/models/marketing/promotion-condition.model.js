@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     promotion_id: DataTypes.STRING,
     condition_type: DataTypes.STRING, // "min_order_amount", "customer_group", "category"
     condition_value: DataTypes.STRING,
+    operator: DataTypes.STRING, //
     // other metadata
     metadata: DataTypes.JSONB,
   }, {
