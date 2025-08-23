@@ -28,11 +28,14 @@ module.exports = (sequelize, DataTypes) => {
     // parent id
     parent_id: DataTypes.STRING,
     // order id
-    rank: DataTypes.NUMBER,
+    rank: DataTypes.DOUBLE,
     // product category is active.
     is_active: DataTypes.BOOLEAN,
     // category is internal. This can be used to only show the product category to admins and hide it from customers.
     is_internal: DataTypes.BOOLEAN,
+    // left right for nested set
+    lft: DataTypes.INTEGER,
+    rgt: DataTypes.INTEGER,
   }, {
     sequelize,
     modelName: 'Category',
