@@ -86,8 +86,74 @@ const CategoryService = {
     async updateCategory(id, updates) {
         const category = await Category.findByPk(id);
         if (!category) throw new Error('Category not found');
-        return await category.update(updates);
+
+        // Хэрэв parent_id өөрчлөгдөөгүй бол энгийн update
+        if (!updates.parent_id || updates.parent_id === category.parent_id) {
+            return await category.update(updates);
+        }
+
+        // --- parent_id өөрчлөгдөх үед ---
+        return await sequelize.transaction(async (t) => {
+            const newParent = await Category.findByPk(updates.parent_id, { transaction: t });
+            if (!newParent) throw new Error('New parent not found');
+
+            // Хуучин subtree-ийн өргөн (width)
+            const width = category.rgt - category.lft + 1;
+
+            // 1. Эхлээд тухайн subtree-г "temporal" болгож зай гаргах
+            await Category.update(
+                { lft: sequelize.literal(`-lft`), rgt: sequelize.literal(`-rgt`) },
+                {
+                    where: {
+                        lft: { [db.Sequelize.Op.gte]: category.lft },
+                        rgt: { [db.Sequelize.Op.lte]: category.rgt },
+                    },
+                    transaction: t,
+                }
+            );
+
+            // 2. Gap бөглөх (хуучин байрнаас авсан зайг нөхөх)
+            await Category.update(
+                { lft: sequelize.literal(`lft - ${width}`) },
+                { where: { lft: { [db.Sequelize.Op.gt]: category.rgt } }, transaction: t }
+            );
+            await Category.update(
+                { rgt: sequelize.literal(`rgt - ${width}`) },
+                { where: { rgt: { [db.Sequelize.Op.gt]: category.rgt } }, transaction: t }
+            );
+
+            // 3. Шинэ parent-ийн rgt-д зай гаргах
+            await Category.update(
+                { rgt: sequelize.literal(`rgt + ${width}`) },
+                { where: { rgt: { [db.Sequelize.Op.gte]: newParent.rgt } }, transaction: t }
+            );
+            await Category.update(
+                { lft: sequelize.literal(`lft + ${width}`) },
+                { where: { lft: { [db.Sequelize.Op.gt]: newParent.rgt } }, transaction: t }
+            );
+
+            // 4. Subtree-г шинэ байрлалд оруулах
+            const shift = newParent.rgt - category.lft;
+            await Category.update(
+                {
+                    lft: sequelize.literal(`-lft + ${shift}`),
+                    rgt: sequelize.literal(`-rgt + ${shift}`),
+                    parent_id: updates.parent_id,
+                },
+                {
+                    where: {
+                        lft: { [db.Sequelize.Op.lt]: 0 },
+                        rgt: { [db.Sequelize.Op.lt]: 0 },
+                    },
+                    transaction: t,
+                }
+            );
+
+            // 5. бусад талбаруудыг энгийнээр update хийх
+            return await category.update(updates, { transaction: t });
+        });
     },
+
 
     /**
      * Category болон бүх хүүхдүүдийг устгах

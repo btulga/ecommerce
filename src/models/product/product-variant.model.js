@@ -39,13 +39,15 @@ module.exports = (sequelize, DataTypes) => {
     requires_shipping: DataTypes.BOOLEAN,
     // sortable
     variant_rank: DataTypes.DOUBLE,
-    // dimesion and weight
+    // dimension and weight
     weight: DataTypes.DOUBLE,
     length: DataTypes.DOUBLE,
     height: DataTypes.DOUBLE,
     width: DataTypes.DOUBLE,
     // metadata
     metadata: DataTypes.JSONB,
+    // attributes
+    attributes: DataTypes.JSONB,
   }, {
     sequelize,
     modelName: 'ProductVariant',
