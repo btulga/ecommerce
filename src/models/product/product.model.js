@@ -23,6 +23,12 @@ module.exports = (sequelize, DataTypes) => {
         otherKey: 'collection_id',
         as: 'collections'
       });
+      Product.belongsToMany(models.SalesChannel, {
+        through: 'product_sales_channel',
+        foreignKey: 'product_id',
+        otherKey: 'sales_channel_id',
+        as: 'sales_channels'
+      });
       // one product has many options
       Product.hasMany(models.ProductOption, {
         foreignKey: 'product_id',
