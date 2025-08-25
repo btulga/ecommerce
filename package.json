@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "migrate": "sequelize db:migrate",
-    "seed": "sequelize db:seed:all"
+    "seed": "sequelize db:seed:all",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",
