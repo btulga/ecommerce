@@ -1,18 +1,18 @@
 // src/services/product.service.js
 const db = require('../models');
-const { Product, ProductOption, ProductVariant, Category, Collection, Tag } = db;
+const { Product, ProductOption, ProductVariant, Category, Collection, Tag, SalesChannel } = db;
 
 const ProductService = {
     /**
-     * Product үүсгэх + tags, categories автоматаар холбох
+     * Product үүсгэх + tags, categories, sales_channels автоматаар холбох
      */
     async createProduct(data) {
-        const { tags, categories, ...productData } = data;
+        const { tags, categories, sales_channels, ...productData } = data;
 
         // Product үүсгэх
         const product = await Product.create(productData);
 
-        // --- Tags холбоо ---
+        // --- Tags ---
         if (tags && Array.isArray(tags) && tags.length > 0) {
             const tagInstances = [];
             for (const tagName of tags) {
@@ -25,22 +25,26 @@ const ProductService = {
             await product.addTags(tagInstances);
         }
 
-        // --- Categories холбоо ---
+        // --- Categories ---
         if (categories && Array.isArray(categories) && categories.length > 0) {
-            const categoryInstances = await Category.findAll({
-                where: { id: categories },
-            });
+            const categoryInstances = await Category.findAll({ where: { id: categories } });
             await product.addCategories(categoryInstances);
+        }
+
+        // --- Sales Channels ---
+        if (sales_channels && Array.isArray(sales_channels) && sales_channels.length > 0) {
+            const channelInstances = await SalesChannel.findAll({ where: { id: sales_channels } });
+            await product.addSales_channels(channelInstances); // Sequelize дотор as нэршил нь sales_channels байгаа
         }
 
         return await this.getProductById(product.id);
     },
 
     /**
-     * Product update + tags, categories sync
+     * Product update + tags, categories, sales_channels sync
      */
     async updateProduct(id, updates) {
-        const { tags, categories, ...productData } = updates;
+        const { tags, categories, sales_channels, ...productData } = updates;
 
         const product = await Product.findByPk(id);
         if (!product) throw new Error('Product not found');
@@ -63,10 +67,14 @@ const ProductService = {
 
         // --- Categories sync ---
         if (categories && Array.isArray(categories)) {
-            const categoryInstances = await Category.findAll({
-                where: { id: categories },
-            });
+            const categoryInstances = await Category.findAll({ where: { id: categories } });
             await product.setCategories(categoryInstances);
+        }
+
+        // --- Sales Channels sync ---
+        if (sales_channels && Array.isArray(sales_channels)) {
+            const channelInstances = await SalesChannel.findAll({ where: { id: sales_channels } });
+            await product.setSales_channels(channelInstances);
         }
 
         return await this.getProductById(id);
@@ -92,6 +100,7 @@ const ProductService = {
                 { model: ProductVariant, as: 'variants' },
                 { model: Category, as: 'categories' },
                 { model: Collection, as: 'collections' },
+                { model: SalesChannel, as: 'sales_channels' },
                 { model: Tag, as: 'tags' },
             ],
         });
@@ -105,44 +114,10 @@ const ProductService = {
             include: [
                 { model: ProductVariant, as: 'variants' },
                 { model: Category, as: 'categories' },
+                { model: SalesChannel, as: 'sales_channels' },
                 { model: Tag, as: 'tags' },
             ],
         });
-    },
-
-    /**
-     * Tag үүсгэх
-     */
-    async createTag(name) {
-        return await Tag.create({ name });
-    },
-
-    /**
-     * Product-д tag нэмэх
-     */
-    async addTagToProduct(productId, tagId) {
-        const product = await Product.findByPk(productId);
-        if (!product) throw new Error('Product not found');
-
-        const tag = await Tag.findByPk(tagId);
-        if (!tag) throw new Error('Tag not found');
-
-        await product.addTag(tag);
-        return await this.getProductById(productId);
-    },
-
-    /**
-     * Product-с tag устгах
-     */
-    async removeTagFromProduct(productId, tagId) {
-        const product = await Product.findByPk(productId);
-        if (!product) throw new Error('Product not found');
-
-        const tag = await Tag.findByPk(tagId);
-        if (!tag) throw new Error('Tag not found');
-
-        await product.removeTag(tag);
-        return await this.getProductById(productId);
     },
 };
 
