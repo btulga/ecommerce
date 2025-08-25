@@ -11,10 +11,16 @@ app.use(express.urlencoded({ extended: true }));
 const categoryRoutes = require('./routes/category-routes');
 const collectionRoutes = require('./routes/collection-routes');
 const discountRoutes = require('./routes/discount-routes');
+const locationRoutes = require('./routes/location-routes');
+const inventoryRoutes = require('./routes/inventory-routes');
+const couponRoutes = require('./routes/coupon-routes');
 
 app.use('/api', categoryRoutes);
 app.use('/api', collectionRoutes);
 app.use('/api', discountRoutes);
+app.use('/api', locationRoutes);
+app.use('/api', inventoryRoutes);
+app.use('/api', couponRoutes);
 
 app.get('/', (req, res) => {
   res.send('E-commerce API is running');

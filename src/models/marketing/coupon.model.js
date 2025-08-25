@@ -95,6 +95,11 @@ module.exports = (sequelize, DataTypes) => {
         constraints: false,
         as: 'collections',
       });
+      // has many benefits
+      Coupon.hasMany(models.CouponBenefit, {
+        foreignKey: 'coupon_id',
+        as: 'coupon_benefits',
+      });
     }
   }
   Coupon.init({
