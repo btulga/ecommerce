@@ -23,11 +23,12 @@ erDiagram
     }
 
     ProductCategory {
-      uuid id PK
-      uuid product_id FK
-      uuid category_id FK
+      uuid product_id PK, FK
+      uuid category_id PK, FK
     }
 ```
+
+> `product_id` ба `category_id` нь нийлээд нийлмэл анхдагч түлхүүрийг бүрдүүлнэ.
 
 ---
 
@@ -98,17 +99,14 @@ erDiagram
 ```json
 [
   {
-    "id": "pcat_1",
     "product_id": "prod_iphone15",
     "category_id": "cat_phones"
   },
   {
-    "id": "pcat_2",
     "product_id": "prod_macbookair",
     "category_id": "cat_laptops"
   },
   {
-    "id": "pcat_3",
     "product_id": "prod_powerbank",
     "category_id": "cat_accessories"
   }
