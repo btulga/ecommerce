@@ -18,6 +18,7 @@ const campaignRoutes = require('./routes/campaign-routes');
 const promotionRoutes = require('./routes/promotion-routes');
 const customerGroupRoutes = require('./routes/customer-group-routes');
 const customerSalesChannelRoutes = require('./routes/customer-sales-channel-routes');
+const adminAuthRoutes = require('./routes/admin-auth-routes');
 
 app.use('/api', categoryRoutes);
 app.use('/api', collectionRoutes);
@@ -29,7 +30,7 @@ app.use('/api', campaignRoutes);
 app.use('/api', promotionRoutes);
 app.use('/api', customerGroupRoutes);
 app.use('/api', customerSalesChannelRoutes);
-
+app.use('/api', adminAuthRoutes);
 
 app.get('/', (req, res) => {
   res.send('E-commerce API is running');
