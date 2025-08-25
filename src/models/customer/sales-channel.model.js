@@ -13,6 +13,12 @@ module.exports = (sequelize) => {
         otherKey: 'customer_id',
         as: 'customers'
       });
+      SalesChannel.belongsToMany(models.Product, {
+        through: 'product_sales_channel',
+        foreignKey: 'sales_channel_id',
+        otherKey: 'product_id',
+        as: 'products',
+      });
     }
   }
   SalesChannel.init({
