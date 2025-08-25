@@ -3,6 +3,10 @@ const { Model, DataTypes} = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Campaign extends Model {
     static associate(models) {
+      Campaign.hasMany(models.Promotion,{
+        foreignKey: 'campaign_id',
+        as: 'promotions',
+      })
     }
   }
   Campaign.init({
