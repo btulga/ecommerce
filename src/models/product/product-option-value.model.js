@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
         as: 'option'
       });
       this.belongsToMany(models.ProductVariant, {
-        through: models.ProductVariantOption,
+        through: models.ProductVariantOptionValue,
         foreignKey: 'product_option_value_id',
         otherKey: 'product_variant_id',
         as: 'variants',
