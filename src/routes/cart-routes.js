@@ -30,4 +30,7 @@ router.post('/carts/:id/override-totals', CartController.overrideTotals); // bod
 router.patch('/carts/:id/status', CartController.setStatus);              // body: { status }
 router.patch('/carts/:id/metadata', CartController.setMetadata);          // body: { metadata }
 
+// Checkout
+router.post('/carts/:id/checkout', CartController.checkout);             // body: { metadata? }
+
 module.exports = router;
