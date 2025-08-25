@@ -19,8 +19,8 @@ module.exports = (sequelize, DataTypes) => {
     metadata: DataTypes.JSONB,
   }, {
     sequelize,
-    modelName: 'PromotionCondition',
-    tableName: 'promotion_condition',
+    modelName: 'CouponCondition',
+    tableName: 'coupon_condition',
     timestamps: true,
     underscored: true
   });
