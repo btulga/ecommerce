@@ -99,6 +99,13 @@ const CartController = {
             res.json(cart);
         } catch (e) { res.status(400).json({ error: e.message }); }
     },
+
+    async checkout(req, res) {
+        try {
+            const order = await CartService.checkout(req.params.id, req.body);
+            res.status(201).json(order);
+        } catch (e) { res.status(400).json({ error: e.message }); }
+    },
 };
 
 module.exports = CartController;

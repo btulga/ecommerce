@@ -2,6 +2,7 @@
 const db = require('../models');
 const { sequelize, Sequelize, Cart, CartItem, Customer, Address, ProductVariant } = db;
 const { Op } = Sequelize;
+const OrderService = require('./order.service');
 
 /**
  * Тэмдэглэл:
@@ -185,6 +186,10 @@ const CartService = {
         if (!cart) throw new Error('Cart not found');
         await cart.update({ metadata });
         return this.getCartById(cart_id);
+    },
+
+    async checkout(cart_id, { metadata } = {}) {
+        return await OrderService.createFromCart(cart_id, { metadata });
     },
 };
 
