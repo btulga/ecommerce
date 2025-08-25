@@ -10,8 +10,11 @@ app.use(express.urlencoded({ extended: true }));
 // Register routes
 const categoryRoutes = require('./routes/category-routes');
 const collectionRoutes = require('./routes/collection-routes');
+const discountRoutes = require('./routes/discount-routes');
+
 app.use('/api', categoryRoutes);
 app.use('/api', collectionRoutes);
+app.use('/api', discountRoutes);
 
 app.get('/', (req, res) => {
   res.send('E-commerce API is running');

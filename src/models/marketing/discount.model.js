@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Discount.init({
     id: { type: DataTypes.STRING, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    name: DataTypes.TEXT,
     // discount type
     discount_type: { type: DataTypes.STRING, allowNull: false }, // 'percentage','fixed'
     // discount value
