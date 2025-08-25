@@ -15,7 +15,7 @@ const locationRoutes = require('./routes/location-routes');
 const inventoryRoutes = require('./routes/inventory-routes');
 const couponRoutes = require('./routes/coupon-routes');
 const campaignRoutes = require('./routes/campaign-routes');
-
+const promotionRoutes = require('./routes/promotion-routes');
 
 app.use('/api', categoryRoutes);
 app.use('/api', collectionRoutes);
@@ -24,6 +24,7 @@ app.use('/api', locationRoutes);
 app.use('/api', inventoryRoutes);
 app.use('/api', couponRoutes);
 app.use('/api', campaignRoutes);
+app.use('/api', promotionRoutes);
 
 
 app.get('/', (req, res) => {
