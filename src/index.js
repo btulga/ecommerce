@@ -16,6 +16,8 @@ const inventoryRoutes = require('./routes/inventory-routes');
 const couponRoutes = require('./routes/coupon-routes');
 const campaignRoutes = require('./routes/campaign-routes');
 const promotionRoutes = require('./routes/promotion-routes');
+const customerGroupRoutes = require('./routes/customer-group-routes');
+const customerSalesChannelRoutes = require('./routes/customer-sales-channel-routes');
 
 app.use('/api', categoryRoutes);
 app.use('/api', collectionRoutes);
@@ -25,6 +27,8 @@ app.use('/api', inventoryRoutes);
 app.use('/api', couponRoutes);
 app.use('/api', campaignRoutes);
 app.use('/api', promotionRoutes);
+app.use('/api', customerGroupRoutes);
+app.use('/api', customerSalesChannelRoutes);
 
 
 app.get('/', (req, res) => {
